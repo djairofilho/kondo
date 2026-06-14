@@ -1,5 +1,7 @@
 from datetime import date, datetime
 from decimal import Decimal
+from pathlib import Path
+from uuid import uuid4
 
 from sqlalchemy.orm import Session
 
@@ -77,6 +79,85 @@ RESIDENT_NAMES = [
 
 def money(value: str | Decimal | int) -> Decimal:
     return Decimal(str(value)).quantize(Decimal("0.01"))
+
+
+def _make_minimal_pdf(title: str, body: str) -> bytes:
+    safe_title = title.replace("(", "").replace(")", "").replace("\\", "")
+    safe_body = body.replace("(", "").replace(")", "").replace("\\", "")
+
+    lines: list[str] = []
+    for paragraph in safe_body.split("."):
+        paragraph = paragraph.strip()
+        if not paragraph:
+            continue
+        while len(paragraph) > 70:
+            lines.append(paragraph[:70])
+            paragraph = paragraph[70:]
+        if paragraph:
+            lines.append(paragraph)
+
+    stream_lines = [f"BT /F1 12 Tf 50 750 Td ({safe_title}) Tj ET"]
+    y = 720
+    for line in lines[:28]:
+        stream_lines.append(f"BT /F1 10 Tf 50 {y} Td ({line}) Tj ET")
+        y -= 16
+
+    stream_bytes = "\n".join(stream_lines).encode("latin-1", errors="replace")
+    stream_len = len(stream_bytes)
+
+    return (
+        b"%PDF-1.4\n"
+        b"1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n"
+        b"2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n"
+        b"3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842]"
+        b" /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>\nendobj\n"
+        + f"4 0 obj\n<< /Length {stream_len} >>\nstream\n".encode()
+        + stream_bytes
+        + b"\nendstream\nendobj\n"
+        b"5 0 obj\n<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\nendobj\n"
+        b"xref\n0 6\n"
+        b"0000000000 65535 f \n"
+        b"0000000009 00000 n \n"
+        b"0000000058 00000 n \n"
+        b"0000000115 00000 n \n"
+        b"0000000266 00000 n \n"
+        b"0000000999 00000 n \n"
+        b"trailer\n<< /Size 6 /Root 1 0 R >>\n"
+        b"startxref\n1099\n%%EOF\n"
+    )
+
+
+def _write_seed_attachment(
+    db: Session,
+    document: Document,
+    condominium_id: int,
+    uploaded_by_user_id: int,
+) -> None:
+    storage_base = Path(__file__).resolve().parents[2] / "storage" / "uploads"
+    folder = storage_base / "document"
+    folder.mkdir(parents=True, exist_ok=True)
+
+    stored_name = f"{uuid4().hex}.pdf"
+    storage_key = f"document/{stored_name}"
+    pdf_bytes = _make_minimal_pdf(document.title, document.content or document.title)
+    (folder / stored_name).write_bytes(pdf_bytes)
+
+    original_name = document.title.lower().replace(" ", "_") + ".pdf"
+    db.add(
+        Attachment(
+            condominium_id=condominium_id,
+            entity_type="document",
+            entity_id=document.id,
+            uploaded_by_user_id=uploaded_by_user_id,
+            original_file_name=original_name,
+            stored_file_name=stored_name,
+            content_type="application/pdf",
+            file_size=len(pdf_bytes),
+            storage_key=storage_key,
+            storage_provider="local",
+            visibility="residents" if document.visibility == "residents" else "managers",
+        )
+    )
 
 
 def reset_demo_data(db: Session) -> None:
@@ -406,13 +487,32 @@ def seed_demo_data(db: Session) -> None:
             CalendarEvent(condominium_id=condominium.id, title="Manutencao preventiva dos elevadores", category="maintenance", start_at=datetime(2026, 6, 18, 9, 0), location="Torre A", visibility="residents", status="scheduled"),
             CalendarEvent(condominium_id=condominium.id, title="Lavagem das caixas d'agua", category="maintenance", start_at=datetime(2026, 6, 21, 8, 0), location="Cobertura", visibility="residents", status="scheduled"),
             CalendarEvent(condominium_id=condominium.id, unit_id=morador_unit.id, title="Reserva do salao - unidade 804", category="reservation", start_at=datetime(2026, 6, 28, 18, 0), location="Salao de festas", visibility="unit", status="scheduled"),
-            Document(condominium_id=condominium.id, title="Regimento interno", document_type="rules", content="Obras com ruido devem ocorrer em dias uteis, das 9h as 17h.", visibility="residents"),
-            Document(condominium_id=condominium.id, title="Ata da assembleia de maio", document_type="minutes", content="Aprovada revisao da manutencao dos elevadores e fundo de reserva.", visibility="residents"),
-            Document(condominium_id=condominium.id, title="Contrato portaria 24h", document_type="contract", content="Contrato vigente com Portaria Segura 24h.", visibility="managers"),
             Announcement(condominium_id=condominium.id, title="Lavagem das caixas d'agua", body="Havera interrupcao programada de agua no dia 21/06 das 8h as 14h.", audience="residents", status="published", published_at=datetime(2026, 6, 12, 10, 0)),
             Announcement(condominium_id=condominium.id, title="Assembleia ordinaria", body="Convocamos todos para assembleia em 24/06 as 19h30 no salao de festas.", audience="residents", status="published", published_at=datetime(2026, 6, 10, 9, 0)),
         ]
     )
+
+    seed_documents = [
+        Document(condominium_id=condominium.id, title="Regimento interno", document_type="rules", content="Obras com ruido devem ocorrer em dias uteis, das 9h as 17h.", visibility="residents"),
+        Document(condominium_id=condominium.id, title="Ata da assembleia de maio", document_type="minutes", content="Aprovada revisao da manutencao dos elevadores e fundo de reserva.", visibility="residents"),
+        Document(
+            condominium_id=condominium.id,
+            title="Boleto exemplo - unidade 804 - junho 2026",
+            document_type="boleto",
+            content=(
+                "Demonstrativo de boleto da unidade A 804 referente a junho de 2026. "
+                "Valor total R$ 784,00 com composicao: condominio R$ 588,00, agua R$ 72,00, "
+                "luz R$ 86,00 e gas R$ 38,00. Vencimento em 10/06/2026. "
+                "Linha digitavel exemplo: 34191.79001 01043.510047 91020.150008 8 98760000078400."
+            ),
+            visibility="residents",
+        ),
+        Document(condominium_id=condominium.id, title="Contrato portaria 24h", document_type="contract", content="Contrato vigente com Portaria Segura 24h.", visibility="managers"),
+    ]
+    db.add_all(seed_documents)
+    db.flush()
+    for doc in seed_documents:
+        _write_seed_attachment(db, doc, condominium.id, manager.id)
 
     db.add_all(
         [
