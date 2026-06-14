@@ -163,6 +163,31 @@ Move item entre colunas.
 }
 ```
 
+## Condominios, unidades e pessoas
+
+```txt
+GET   /condominiums
+POST  /condominiums
+GET   /condominiums/{condominium_id}
+PATCH /condominiums/{condominium_id}
+GET   /condominiums/{condominium_id}/overview
+
+GET   /condominiums/{condominium_id}/units
+POST  /condominiums/{condominium_id}/units
+GET   /units/{unit_id}
+PATCH /units/{unit_id}
+GET   /units/{unit_id}/history
+
+GET    /condominiums/{condominium_id}/memberships
+POST   /condominiums/{condominium_id}/memberships
+PATCH  /memberships/{membership_id}
+DELETE /memberships/{membership_id}
+
+GET   /units/{unit_id}/residents
+POST  /units/{unit_id}/residents
+PATCH /residents/{resident_id}
+```
+
 ## Financeiro
 
 ### `GET /finance/summary`
