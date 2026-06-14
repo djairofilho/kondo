@@ -21,6 +21,7 @@ from app.services.payment_service import (
     create_payment,
     create_revenue,
     generate_boleto,
+    generate_component_boleto,
     get_expense,
     get_payment,
     get_revenue,
@@ -150,4 +151,9 @@ def post_mark_payment_paid(payment_id: int, db: Session = Depends(get_db)) -> Pa
 @router.post("/payments/{payment_id}/generate-boleto", response_model=Payment, dependencies=[Depends(require_roles("manager"))])
 def post_generate_boleto(payment_id: int, db: Session = Depends(get_db)) -> Payment:
     return generate_boleto(db, payment_id)
+
+
+@router.post("/payments/{payment_id}/components/{component}/generate-boleto", response_model=Payment, dependencies=[Depends(require_roles("manager"))])
+def post_generate_component_boleto(payment_id: int, component: str, db: Session = Depends(get_db)) -> Payment:
+    return generate_component_boleto(db, payment_id, component)
 

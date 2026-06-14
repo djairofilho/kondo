@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+from decimal import Decimal
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
@@ -103,6 +104,45 @@ def generate_boleto(db: Session, payment_id: int) -> Payment:
     metadata = entity.payment_metadata or {}
     metadata["boleto_url"] = f"https://payments.kondo.local/boletos/{payment_id}"
     metadata["barcode"] = f"23790.00000 00000.000000 {payment_id:010d}"
+    entity.payment_method = "boleto"
+    entity.payment_metadata = metadata
+    db.commit()
+    db.refresh(entity)
+    return entity
+
+
+VALID_PAYMENT_COMPONENTS = {"condominio", "agua", "luz", "gas"}
+
+
+def generate_component_boleto(db: Session, payment_id: int, component: str) -> Payment:
+    entity = _get_or_404(db, Payment, payment_id)
+    component_key = component.lower().strip()
+    if component_key not in VALID_PAYMENT_COMPONENTS:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid payment component",
+        )
+
+    metadata = entity.payment_metadata or {}
+    breakdown = metadata.get("breakdown") if isinstance(metadata.get("breakdown"), dict) else {}
+    amount = Decimal(str(breakdown.get(component_key, "0")))
+    if amount <= 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Payment component has no amount",
+        )
+
+    component_boletos = metadata.get("component_boletos")
+    if not isinstance(component_boletos, dict):
+        component_boletos = {}
+
+    component_boletos[component_key] = {
+        "boleto_url": f"https://payments.kondo.local/boletos/{payment_id}/{component_key}",
+        "barcode": f"23790.00000 {payment_id:010d} {component_key[:3].upper()}",
+        "amount": str(amount.quantize(Decimal("0.01"))),
+        "component": component_key,
+    }
+    metadata["component_boletos"] = component_boletos
     entity.payment_method = "boleto"
     entity.payment_metadata = metadata
     db.commit()
