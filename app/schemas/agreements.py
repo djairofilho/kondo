@@ -8,10 +8,13 @@ class AgreementSimulationRequest(BaseModel):
     amount_due: Decimal = Field(gt=0)
     entry_amount: Decimal = Field(ge=0)
     installments: int = Field(gt=0, le=24)
+    fine_amount: Decimal = Field(default=Decimal("0.00"), ge=0)
 
 
 class AgreementSimulationResponse(BaseModel):
     monthly_installment: Decimal
+    total_due: Decimal
+    financed_amount: Decimal
     cash_impact: str
     recommendation: str
 

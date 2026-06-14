@@ -42,6 +42,7 @@ financeiros para condominios.
 - Backend: FastAPI, SQLAlchemy, Pydantic e `uv`.
 - Banco dev: SQLite (sem Docker) ou PostgreSQL (Docker).
 - IA: servico abstrato no MVP, com possibilidade de plugar OpenAI API.
+- RAG de documentos: extracao local de PDF com `pypdf` e busca lexical sem custo de API.
 
 ## Estrutura
 
@@ -53,6 +54,58 @@ storage/      # storage local de desenvolvimento
 docs/         # documentacao de produto, tecnica, demo e pitch
 pyproject.toml
 ```
+
+## Decisoes tecnicas
+
+### Separacao de repositorios
+
+- O backend fica neste repositorio (`kondo`).
+- O frontend fica no repositorio irmao `../kondo-front`.
+- Contratos e regras de dominio devem ficar no backend; telas, estado de UI e chamadas via TanStack Query ficam no frontend.
+- Mudancas que alteram contrato de API devem ser refletidas nos dois repositorios.
+
+### Banco e portabilidade
+
+- O MVP deve rodar em SQLite para desenvolvimento rapido e PostgreSQL via Docker para ambiente mais proximo de producao.
+- Modelos SQLAlchemy devem evitar recursos exclusivos de um banco quando nao forem essenciais.
+- Valores financeiros usam `Decimal` / `Numeric`, nunca `float`, para evitar erro de arredondamento em acordos, receitas e despesas.
+
+### Storage local
+
+- Uploads ficam em `storage/uploads/` apenas para desenvolvimento.
+- O banco guarda metadados em `Attachment`; o binario fica no filesystem.
+- Downloads passam por endpoint autenticado para respeitar permissoes de documento, chamado ou pagamento.
+
+### RAG de documentos
+
+- A decisao foi usar RAG lexical local no MVP, por ser o caminho mais barato e confiavel para demo.
+- Ao subir PDF em `/documents/upload`, o arquivo e salvo como `Attachment` e o texto e extraido com `pypdf`.
+- O texto extraido alimenta `Document.content`, que passa a ser a base pesquisavel.
+- Perguntas em `/documents/{id}/ask` dividem o conteudo em chunks, normalizam texto, removem stopwords simples e ranqueiam trechos por termos da pergunta.
+- Nao ha embeddings, banco vetorial ou chamada de LLM nesse fluxo; o custo por consulta e zero em API.
+- Se nenhum trecho relevante for encontrado, a API informa que nao ha base suficiente no documento em vez de inventar resposta.
+- Essa abordagem e adequada para regras de condominio, atas e contratos simples. O caminho futuro e trocar o retrieval lexical por embeddings e usar LLM apenas para sintetizar respostas com citacoes.
+
+### IA e fallback
+
+- Chamadas de IA ficam concentradas em `app/services/ai_service.py` e `app/services/ai_chat_service.py`.
+- O sistema deve continuar funcional sem chave de IA, usando respostas simuladas ou logica local.
+- A IA nao deve executar decisoes sensiveis sozinha, como aprovar gasto, perdoar divida ou iniciar cobranca juridica.
+
+### Simulacao de acordos de inadimplencia
+
+- A simulacao de acordo recebe `amount_due`, `entry_amount`, `installments` e `fine_amount`.
+- A multa entra no total renegociado, mas nao exigiu nova coluna no modelo de `Agreement`; o contrato persistido continua guardando entrada, numero de parcelas e parcela mensal.
+- A resposta retorna `total_due`, `financed_amount`, `monthly_installment`, impacto no caixa e recomendacao.
+- Parcelamento e limitado a 24 vezes pelo schema.
+- Multa alta gera recomendacao de cautela porque pode reduzir adesao do morador.
+
+### Autorizacao por perfil
+
+- `manager` pode escrever dados operacionais e financeiros.
+- `board_member` pode consultar informacoes de governanca/financeiro, mas nao registrar despesas nem alterar status sensiveis.
+- `resident` tem acesso restrito ao portal e a documentos/comunicados permitidos.
+- Acesso real passa por `Membership`, conectando usuario, condominio, unidade e papel.
 
 ## Como executar localmente
 

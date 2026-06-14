@@ -111,6 +111,21 @@ def test_agreement_lifecycle(create_auth_context: Callable[[str, bool], dict]) -
     client = TestClient(app)
     manager = create_auth_context("manager")
 
+    simulate_response = client.post(
+        "/agreements/simulate",
+        headers=manager["headers"],
+        json={
+            "unit_id": manager["unit_id"],
+            "amount_due": "1548.00",
+            "entry_amount": "300.00",
+            "installments": 4,
+            "fine_amount": "77.40",
+        },
+    )
+    assert simulate_response.status_code == 200
+    assert simulate_response.json()["total_due"] == "1625.40"
+    assert simulate_response.json()["financed_amount"] == "1325.40"
+
     create_response = client.post(
         "/agreements",
         headers=manager["headers"],

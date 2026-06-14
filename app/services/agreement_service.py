@@ -8,24 +8,31 @@ from app.schemas.agreements import AgreementCreate, AgreementSimulationRequest, 
 
 
 def simulate_agreement(payload: AgreementSimulationRequest) -> AgreementSimulationResponse:
-    remaining_amount = max(payload.amount_due - payload.entry_amount, Decimal("0"))
+    total_due = payload.amount_due + payload.fine_amount
+    remaining_amount = max(total_due - payload.entry_amount, Decimal("0"))
     monthly_installment = (remaining_amount / payload.installments).quantize(
         Decimal("0.01"),
         rounding=ROUND_HALF_UP,
     )
 
     is_safe_installment_count = payload.installments <= 4
-    has_meaningful_entry = payload.entry_amount >= payload.amount_due * Decimal("0.20")
+    has_meaningful_entry = payload.entry_amount >= total_due * Decimal("0.20")
+    has_moderate_fine = payload.fine_amount <= payload.amount_due * Decimal("0.10")
 
-    if is_safe_installment_count and has_meaningful_entry:
+    if is_safe_installment_count and has_meaningful_entry and has_moderate_fine:
         cash_impact = "Mantem o caixa positivo no proximo mes."
         recommendation = "Acordo recomendado: boa entrada e prazo controlado."
+    elif not has_moderate_fine:
+        cash_impact = "Multa elevada aumenta o valor da parcela e pode reduzir adesao."
+        recommendation = "Revise a multa ou ofereca entrada menor para preservar negociacao."
     else:
         cash_impact = "Pode pressionar o caixa se outras unidades atrasarem."
         recommendation = "Sugira entrada maior ou reduza o numero de parcelas."
 
     return AgreementSimulationResponse(
         monthly_installment=monthly_installment,
+        total_due=total_due.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP),
+        financed_amount=remaining_amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP),
         cash_impact=cash_impact,
         recommendation=recommendation,
     )
