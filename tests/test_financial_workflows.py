@@ -33,7 +33,21 @@ def test_financial_crud_and_payment_flow(create_auth_context: Callable[[str, boo
     payment_response = client.post(
         "/payments",
         headers=manager["headers"],
-        json={"condominium_id": 1, "unit_id": 1, "amount": "516.00", "payment_method": "pix"},
+        json={
+            "condominium_id": 1,
+            "unit_id": 1,
+            "amount": "516.00",
+            "payment_method": "pix",
+            "payment_metadata": {
+                "billing_mode": "separate",
+                "breakdown": {
+                    "condominio": "360.00",
+                    "agua": "58.00",
+                    "luz": "72.00",
+                    "gas": "26.00",
+                },
+            },
+        },
     )
     assert payment_response.status_code == 200
     payment_id = payment_response.json()["id"]
@@ -42,6 +56,15 @@ def test_financial_crud_and_payment_flow(create_auth_context: Callable[[str, boo
     boleto_response = client.post(f"/payments/{payment_id}/generate-boleto", headers=manager["headers"])
     assert boleto_response.status_code == 200
     assert boleto_response.json()["payment_method"] == "boleto"
+
+    component_boleto_response = client.post(
+        f"/payments/{payment_id}/components/agua/generate-boleto",
+        headers=manager["headers"],
+    )
+    assert component_boleto_response.status_code == 200
+    metadata = component_boleto_response.json()["payment_metadata"]
+    assert metadata["component_boletos"]["agua"]["boleto_url"]
+    assert metadata["component_boletos"]["agua"]["barcode"]
 
     paid_response = client.post(f"/payments/{payment_id}/mark-paid", headers=manager["headers"])
     assert paid_response.status_code == 200

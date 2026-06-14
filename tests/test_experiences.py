@@ -88,22 +88,37 @@ def test_resident_payments_boleto_and_onboarding_are_unit_scoped(create_auth_con
     resident = create_auth_context("resident")
 
     with SessionLocal() as db:
-        db.add(
-            Payment(
-                condominium_id=resident["condominium_id"],
-                unit_id=resident["unit_id"],
-                amount="516.00",
-                status="pending",
-            )
+        own_payment = Payment(
+            condominium_id=resident["condominium_id"],
+            unit_id=resident["unit_id"],
+            amount="516.00",
+            status="pending",
+            payment_metadata={
+                "billing_mode": "separate",
+                "breakdown": {
+                    "condominio": "360.00",
+                    "agua": "58.00",
+                    "luz": "72.00",
+                    "gas": "26.00",
+                },
+            },
         )
-        db.add(
-            Payment(
-                condominium_id=resident["condominium_id"],
-                unit_id=resident["other_unit_id"],
-                amount="760.00",
-                status="pending",
-            )
+        other_payment = Payment(
+            condominium_id=resident["condominium_id"],
+            unit_id=resident["other_unit_id"],
+            amount="760.00",
+            status="pending",
+            payment_metadata={
+                "billing_mode": "separate",
+                "breakdown": {
+                    "condominio": "540.00",
+                    "agua": "80.00",
+                    "luz": "98.00",
+                    "gas": "42.00",
+                },
+            },
         )
+        db.add_all([own_payment, other_payment])
         db.add(
             Resident(
                 unit_id=resident["unit_id"],
@@ -111,6 +126,8 @@ def test_resident_payments_boleto_and_onboarding_are_unit_scoped(create_auth_con
                 email="morador@test.local",
             )
         )
+        db.flush()
+        other_payment_id = other_payment.id
         db.commit()
 
     payments = client.get("/resident-portal/payments", headers=resident["headers"])
@@ -124,6 +141,19 @@ def test_resident_payments_boleto_and_onboarding_are_unit_scoped(create_auth_con
     )
     assert boleto.status_code == 200
     assert boleto.json()["payment_method"] == "boleto"
+
+    component_boleto = client.post(
+        f"/resident-portal/payments/{payment_id}/components/agua/generate-boleto",
+        headers=resident["headers"],
+    )
+    assert component_boleto.status_code == 200
+    assert component_boleto.json()["payment_metadata"]["component_boletos"]["agua"]["barcode"]
+
+    foreign_component_boleto = client.post(
+        f"/resident-portal/payments/{other_payment_id}/components/agua/generate-boleto",
+        headers=resident["headers"],
+    )
+    assert foreign_component_boleto.status_code == 403
 
     onboarding = client.post(
         "/resident-portal/onboarding",

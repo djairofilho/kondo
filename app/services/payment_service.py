@@ -3,6 +3,7 @@ from decimal import Decimal
 
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
+from sqlalchemy.orm.attributes import flag_modified
 
 from app.models import Expense, Payment, Revenue
 from app.schemas.payments import ExpenseCreate, ExpenseUpdate, PaymentCreate, PaymentUpdate, RevenueCreate, RevenueUpdate
@@ -101,7 +102,7 @@ def mark_payment_paid(db: Session, payment_id: int) -> Payment:
 
 def generate_boleto(db: Session, payment_id: int) -> Payment:
     entity = _get_or_404(db, Payment, payment_id)
-    metadata = entity.payment_metadata or {}
+    metadata = dict(entity.payment_metadata or {})
     metadata["boleto_url"] = f"https://payments.kondo.local/boletos/{payment_id}"
     metadata["barcode"] = f"23790.00000 00000.000000 {payment_id:010d}"
     entity.payment_method = "boleto"
@@ -123,7 +124,7 @@ def generate_component_boleto(db: Session, payment_id: int, component: str) -> P
             detail="Invalid payment component",
         )
 
-    metadata = entity.payment_metadata or {}
+    metadata = dict(entity.payment_metadata or {})
     breakdown = metadata.get("breakdown") if isinstance(metadata.get("breakdown"), dict) else {}
     amount = Decimal(str(breakdown.get(component_key, "0")))
     if amount <= 0:
@@ -145,6 +146,8 @@ def generate_component_boleto(db: Session, payment_id: int, component: str) -> P
     metadata["component_boletos"] = component_boletos
     entity.payment_method = "boleto"
     entity.payment_metadata = metadata
+    flag_modified(entity, "payment_metadata")
+    flag_modified(entity, "payment_metadata")
     db.commit()
     db.refresh(entity)
     return entity
