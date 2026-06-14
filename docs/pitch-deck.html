@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kondo — Pitch Deck</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300;0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;0,14..32,800;0,14..32,900;1,14..32,400&display=swap" rel="stylesheet" />
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --ink: #0d1117; --ink-2: #1c2333; --ink-3: #2d3748;
+  --muted: #64748b; --muted-2: #94a3b8;
+  --rule: #e2e8f0; --surface: #f8fafc; --white: #ffffff;
+  --blue: #2563eb; --blue-pale: #eff6ff; --blue-mid: #bfdbfe;
+  --teal: #0d9488; --red: #dc2626; --red-pale: #fef2f2;
+  --amber: #d97706; --amber-pale: #fffbeb;
+  --green: #16a34a; --green-pale: #f0fdf4;
+  --font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+html, body { font-family: var(--font); background: #090c14; -webkit-font-smoothing: antialiased; }
+body { min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 48px 24px 100px; gap: 20px; }
+
+.slide {
+  width: 960px; min-height: 540px; border-radius: 12px; overflow: hidden; display: none;
+  box-shadow: 0 0 0 1px rgba(255,255,255,.05), 0 8px 32px rgba(0,0,0,.4), 0 32px 80px rgba(0,0,0,.3);
+}
+.slide.active { display: flex; flex-direction: column; }
+
+/* NAV */
+#nav {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,.05); backdrop-filter: blur(24px) saturate(180%);
+  border: 1px solid rgba(255,255,255,.09); border-radius: 999px; padding: 8px 16px; z-index: 1000;
+}
+#nav button {
+  width: 28px; height: 28px; border-radius: 50%;
+  border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.05);
+  color: rgba(255,255,255,.7); cursor: pointer; font-size: 13px;
+  display: flex; align-items: center; justify-content: center; transition: background .15s;
+}
+#nav button:hover { background: rgba(255,255,255,.12); }
+#nav-dots { display: flex; gap: 5px; align-items: center; padding: 0 6px; }
+.dot-nav { width: 5px; height: 5px; border-radius: 50%; background: rgba(255,255,255,.18); cursor: pointer; transition: background .2s, transform .2s; }
+.dot-nav.active { background: rgba(255,255,255,.85); transform: scale(1.3); }
+#slide-label { font-size: 11px; color: rgba(255,255,255,.35); font-weight: 500; min-width: 40px; text-align: center; }
+
+/* SHARED */
+.s-header { padding: 28px 40px 0; display: flex; align-items: flex-start; justify-content: space-between; flex-shrink: 0; }
+.s-header-left { display: flex; flex-direction: column; gap: 3px; }
+.s-eyebrow { font-size: 10px; font-weight: 700; letter-spacing: 1.4px; text-transform: uppercase; color: var(--blue); }
+.s-title { font-size: 21px; font-weight: 800; color: var(--ink); letter-spacing: -.5px; line-height: 1.15; }
+.s-subtitle { font-size: 12.5px; color: var(--muted); margin-top: 1px; }
+.s-num { font-size: 10px; font-weight: 600; color: var(--muted-2); letter-spacing: .5px; background: var(--surface); padding: 4px 10px; border-radius: 999px; border: 1px solid var(--rule); white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+.s-rule { height: 1px; background: var(--rule); margin: 14px 40px 0; }
+.s-body { flex: 1; padding: 16px 40px 32px; display: flex; gap: 14px; }
+
+/* ATOMS */
+.label-xs { font-size: 10px; font-weight: 700; letter-spacing: 1.1px; text-transform: uppercase; color: var(--muted); }
+.num-xl { font-size: 36px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; font-variant-numeric: tabular-nums; }
+.c-blue { color: var(--blue); } .c-teal { color: var(--teal); } .c-red { color: var(--red); }
+.c-green { color: var(--green); } .c-amber { color: var(--amber); } .c-ink { color: var(--ink); }
+.card { background: var(--white); border: 1px solid var(--rule); border-radius: 10px; padding: 18px 20px; }
+.card-surface { background: var(--surface); }
+.badge { display: inline-flex; align-items: center; gap: 5px; font-size: 9.5px; font-weight: 700; letter-spacing: .5px; padding: 3px 8px; border-radius: 999px; }
+.badge-blue  { background: var(--blue-pale); color: var(--blue);  border: 1px solid var(--blue-mid); }
+.badge-red   { background: var(--red-pale);  color: var(--red);   border: 1px solid #fecaca; }
+.badge-green { background: var(--green-pale);color: var(--green); border: 1px solid #bbf7d0; }
+.badge-amber { background: var(--amber-pale);color: var(--amber); border: 1px solid #fde68a; }
+.row-item { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--rule); }
+.row-item:last-child { border-bottom: none; }
+.row-item-label { font-size: 12.5px; color: var(--ink-3); }
+.row-item-val   { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.check-item { display: flex; align-items: flex-start; gap: 8px; font-size: 12.5px; color: var(--ink-3); line-height: 1.45; }
+
+/* SVG CHECKMARK shortcuts */
+.chk-b { fill: #eff6ff; stroke: #2563eb; }
+.chk-g { fill: #f0fdf4; stroke: #16a34a; }
+.chk-a { fill: #fffbeb; stroke: #d97706; }
+.chk-w { fill: rgba(255,255,255,.08); stroke: #93c5fd; }
+
+/* ===== SLIDE 1 — COVER ===== */
+.cover { background: var(--ink); flex: 1; display: grid; grid-template-columns: 1fr 1fr; position: relative; overflow: hidden; }
+.cover-left { padding: 48px 40px 48px 48px; display: flex; flex-direction: column; justify-content: space-between; position: relative; z-index: 1; }
+.cover-right { display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.c-glow { position: absolute; border-radius: 50%; filter: blur(90px); opacity: .14; pointer-events: none; }
+.c-glow-1 { width: 380px; height: 380px; background: #3b82f6; top: -80px; right: -60px; }
+.c-glow-2 { width: 260px; height: 260px; background: #0d9488; bottom: 0; right: 60px; }
+.cover-logo { display: flex; align-items: center; gap: 10px; }
+.cover-logo-mark { width: 34px; height: 34px; background: var(--blue); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+.cover-logo-name { font-size: 15px; font-weight: 800; color: white; letter-spacing: -.3px; }
+.cover-title { font-size: 44px; font-weight: 800; color: white; letter-spacing: -2px; line-height: 1.05; }
+.cover-title em { color: #60a5fa; font-style: normal; }
+.cover-tagline { font-size: 13px; color: rgba(255,255,255,.45); line-height: 1.65; max-width: 340px; margin-top: 14px; }
+.cover-pills { display: flex; gap: 7px; flex-wrap: wrap; }
+.cover-pill { font-size: 10px; font-weight: 600; letter-spacing: .4px; color: rgba(255,255,255,.45); background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.08); border-radius: 999px; padding: 4px 12px; }
+.cover-pill-accent { color: #93c5fd; background: rgba(37,99,235,.2); border-color: rgba(37,99,235,.35); }
+.cover-cards { display: flex; flex-direction: column; gap: 9px; width: 210px; position: relative; z-index: 1; }
+.cover-card { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.07); border-radius: 10px; padding: 13px 17px; }
+.cover-card.hl { background: rgba(37,99,235,.15); border-color: rgba(37,99,235,.3); }
+.cover-card .cl { font-size: 9.5px; color: rgba(255,255,255,.35); font-weight: 600; letter-spacing: .9px; text-transform: uppercase; }
+.cover-card .cv { font-size: 22px; font-weight: 800; color: white; letter-spacing: -1px; margin-top: 3px; font-variant-numeric: tabular-nums; }
+.cover-card.hl .cv { color: #93c5fd; }
+.cover-card .cs { font-size: 10.5px; color: rgba(255,255,255,.3); margin-top: 2px; }
+
+/* ===== SLIDE 2 — MERCADO ===== */
+.market-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex: 1; }
+.mcard { background: var(--white); border: 1px solid var(--rule); border-radius: 10px; padding: 20px 22px; display: flex; flex-direction: column; gap: 8px; position: relative; overflow: hidden; }
+.mcard::after { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; }
+.mcard.blue::after { background: var(--blue); } .mcard.red::after { background: var(--red); }
+.mcard.teal::after { background: var(--teal); } .mcard.amber::after { background: var(--amber); }
+.mcard-icon { width: 28px; height: 28px; border-radius: 7px; display: flex; align-items: center; justify-content: center; }
+.mcard-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+/* ===== SLIDE 3 — PROBLEMA ===== */
+.problem-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 11px; flex: 1; }
+.pcol { background: var(--white); border: 1px solid var(--rule); border-radius: 10px; padding: 17px; display: flex; flex-direction: column; gap: 10px; }
+.pcol-head { display: flex; align-items: center; gap: 9px; padding-bottom: 10px; border-bottom: 1px solid var(--rule); }
+.pcol-avatar { width: 30px; height: 30px; border-radius: 7px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.pcol-name { font-size: 13px; font-weight: 700; color: var(--ink); }
+.pcol-role { font-size: 10.5px; color: var(--muted); margin-top: 1px; }
+.pain-list { display: flex; flex-direction: column; gap: 7px; }
+.pain-item { display: flex; align-items: flex-start; gap: 7px; font-size: 12px; color: var(--ink-3); line-height: 1.45; }
+.pain-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--muted-2); flex-shrink: 0; margin-top: 5px; }
+.pain-item.hot .pain-dot { background: var(--red); }
+.problem-note { background: var(--surface); border: 1px solid var(--rule); border-radius: 9px; padding: 12px 16px; display: flex; gap: 10px; align-items: flex-start; flex-shrink: 0; font-size: 12px; color: var(--ink-3); line-height: 1.55; }
+
+/* ===== SLIDE 4 — PRODUTO ===== */
+.product-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 11px; flex: 1; }
+.prodcol { background: var(--white); border: 1px solid var(--rule); border-radius: 10px; padding: 17px; display: flex; flex-direction: column; gap: 11px; }
+.prodcol-head { padding-bottom: 10px; border-bottom: 1px solid var(--rule); }
+.prodcol-icon { width: 30px; height: 30px; border-radius: 7px; display: flex; align-items: center; justify-content: center; }
+.prodcol-title { font-size: 13px; font-weight: 700; color: var(--ink); margin-top: 8px; }
+.prodcol-sub   { font-size: 10.5px; color: var(--muted); margin-top: 1px; }
+.feat-list { display: flex; flex-direction: column; gap: 6px; }
+
+/* ===== SLIDE 5 — COMPETIÇÃO ===== */
+.comp-layout { display: flex; gap: 13px; flex: 1; }
+.comp-table-wrap { flex: 1.65; background: var(--white); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; }
+.comp-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.comp-table thead tr { background: var(--ink); }
+.comp-table thead th { padding: 10px 13px; text-align: left; font-size: 10px; font-weight: 700; letter-spacing: .7px; text-transform: uppercase; color: rgba(255,255,255,.5); }
+.comp-table thead th.kc { color: #93c5fd; }
+.comp-table tbody tr { border-bottom: 1px solid var(--rule); }
+.comp-table tbody tr:last-child { border-bottom: none; }
+.comp-table tbody tr:hover td { background: var(--surface); }
+.comp-table td { padding: 10px 13px; color: var(--ink-3); vertical-align: middle; }
+.comp-table td.fc { font-weight: 600; color: var(--ink); font-size: 12.5px; }
+.comp-table td.kc { font-weight: 600; color: var(--blue); }
+.ic-x { color: var(--muted-2); font-size: 12px; }
+.ic-p { color: var(--amber); font-size: 11px; font-weight: 500; }
+.comp-sidebar { flex: 1; display: flex; flex-direction: column; gap: 11px; }
+.comp-pos { background: var(--blue); border-radius: 10px; padding: 20px; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; }
+.comp-pos-q { font-size: 13px; color: rgba(255,255,255,.82); line-height: 1.6; font-style: italic; }
+.comp-pos-a { font-size: 10px; color: rgba(255,255,255,.4); margin-top: 10px; font-weight: 500; }
+
+/* ===== SLIDE 6 — PRICING ===== */
+.pricing-row { display: flex; gap: 9px; flex: 1; align-items: stretch; }
+.plan { flex: 1; background: var(--white); border: 1px solid var(--rule); border-radius: 10px; padding: 17px 15px; display: flex; flex-direction: column; position: relative; }
+.plan.feat { background: var(--ink); border-color: var(--ink); box-shadow: 0 4px 24px rgba(0,0,0,.18); }
+.plan-badge-wrap { position: absolute; top: -1px; left: 50%; transform: translateX(-50%); }
+.plan-badge { background: var(--blue); color: white; font-size: 9px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; padding: 3px 10px; border-radius: 0 0 6px 6px; white-space: nowrap; }
+.pn  { font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+.pn-w { color: rgba(255,255,255,.4); }
+.pp  { font-size: 28px; font-weight: 800; color: var(--ink); letter-spacing: -1px; line-height: 1; margin: 7px 0 2px; font-variant-numeric: tabular-nums; }
+.pp-w { color: white; }
+.per { font-size: 10.5px; color: var(--muted); font-weight: 400; }
+.per-w { color: rgba(255,255,255,.38); }
+.p-div { height: 1px; background: var(--rule); margin: 11px 0; }
+.p-div-d { background: rgba(255,255,255,.07); }
+.pf { font-size: 11.5px; color: var(--ink-3); display: flex; gap: 7px; align-items: flex-start; margin-bottom: 6px; line-height: 1.4; }
+.pf-w { color: rgba(255,255,255,.65); }
+.pnote { font-size: 10px; color: var(--muted); margin-top: auto; padding-top: 8px; line-height: 1.4; }
+.pnote-w { color: rgba(255,255,255,.3); }
+
+/* ===== SLIDE 7 — UNIT ECONOMICS ===== */
+.econ-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; flex: 1; }
+.econ-left  { display: flex; flex-direction: column; gap: 10px; }
+.econ-right { display: flex; flex-direction: column; gap: 10px; }
+.margin-card { background: var(--ink); border-radius: 10px; padding: 22px 24px; display: flex; flex-direction: column; gap: 12px; }
+.m-track { background: rgba(255,255,255,.1); border-radius: 3px; height: 5px; }
+.m-fill  { height: 100%; border-radius: 3px; background: linear-gradient(90deg, #2563eb, #0d9488); }
+.econ-row { display: flex; gap: 10px; }
+.econ-stat { flex: 1; background: var(--white); border: 1px solid var(--rule); border-radius: 10px; padding: 13px 15px; }
+.econ-stat-val { font-size: 20px; font-weight: 800; letter-spacing: -.5px; margin-top: 4px; font-variant-numeric: tabular-nums; }
+
+/* ===== SLIDE 8 — PROJEÇÃO ===== */
+.proj-layout { display: flex; gap: 13px; flex: 1; }
+.proj-left  { flex: 1.35; display: flex; flex-direction: column; gap: 10px; }
+.proj-right { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.proj-table-wrap { background: var(--white); border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; flex: 1; }
+.pt { width: 100%; border-collapse: collapse; font-size: 12px; }
+.pt thead tr { background: var(--surface); border-bottom: 1px solid var(--rule); }
+.pt thead th { padding: 9px 13px; text-align: left; font-size: 9.5px; font-weight: 700; letter-spacing: .9px; text-transform: uppercase; color: var(--muted); }
+.pt thead th.r { text-align: right; }
+.pt tbody tr { border-bottom: 1px solid var(--rule); }
+.pt tbody tr:last-child { border-bottom: none; }
+.pt td { padding: 10px 13px; color: var(--ink-3); font-variant-numeric: tabular-nums; vertical-align: middle; }
+.pt td.r  { text-align: right; } .pt td.b  { font-weight: 700; color: var(--ink); }
+.pt td.bl { color: var(--blue); font-weight: 600; } .pt td.yl { font-weight: 700; color: var(--ink); font-size: 12.5px; }
+.proj-callout { border-radius: 10px; padding: 17px 19px; }
+.pc-l { font-size: 9.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; opacity: .5; }
+.pc-v { font-size: 26px; font-weight: 800; letter-spacing: -1px; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.pc-s { font-size: 11px; opacity: .6; margin-top: 5px; line-height: 1.5; }
+
+/* ===== SLIDE 9 — FINTECH ===== */
+.fintech-layout { display: flex; gap: 13px; flex: 1; }
+.fintech-left  { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+.fintech-right { flex: 1.2; display: flex; flex-direction: column; gap: 8px; }
+.fintech-volume { background: var(--ink); border-radius: 10px; padding: 20px 22px; }
+.fv-l { font-size: 9.5px; font-weight: 700; letter-spacing: 1.1px; text-transform: uppercase; color: rgba(255,255,255,.38); }
+.fv-v { font-size: 34px; font-weight: 800; color: white; letter-spacing: -1.5px; margin-top: 6px; font-variant-numeric: tabular-nums; }
+.fv-s { font-size: 11.5px; color: rgba(255,255,255,.38); margin-top: 5px; line-height: 1.5; }
+.fp { background: var(--white); border: 1px solid var(--rule); border-radius: 8px; padding: 10px 15px; display: flex; align-items: center; justify-content: space-between; }
+.fp-n { font-size: 12.5px; color: var(--ink-3); font-weight: 500; }
+.fp-v { font-size: 13px; font-weight: 800; color: var(--green); font-variant-numeric: tabular-nums; }
+.fintech-total { background: var(--teal); border-radius: 8px; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; }
+.ft-l { font-size: 11.5px; color: white; font-weight: 600; }
+.ft-v { font-size: 17px; font-weight: 800; color: white; font-variant-numeric: tabular-nums; }
+.fintech-moat { background: var(--surface); border: 1px solid var(--rule); border-radius: 8px; padding: 12px 15px; font-size: 12px; color: var(--ink-3); line-height: 1.6; }
+
+/* ===== SLIDE 10 — INVESTIMENTO ===== */
+.inv-layout { display: flex; gap: 13px; flex: 1; }
+.inv-phase { flex: 1; background: var(--white); border: 1px solid var(--rule); border-radius: 10px; padding: 20px 22px; display: flex; flex-direction: column; }
+.inv-dark { background: var(--ink); border-color: var(--ink); }
+.inv-head { margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--rule); }
+.inv-head-d { border-bottom-color: rgba(255,255,255,.07); }
+.inv-tag  { font-size: 10px; font-weight: 700; letter-spacing: 1.1px; text-transform: uppercase; }
+.inv-amt  { font-size: 26px; font-weight: 800; letter-spacing: -1px; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.inv-goal { font-size: 11px; color: var(--muted); margin-top: 3px; }
+.inv-goal-d { color: rgba(255,255,255,.35); }
+.inv-be { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--rule); }
+.inv-be-d { border-top-color: rgba(255,255,255,.07); }
+.inv-be-l { font-size: 9.5px; font-weight: 700; letter-spacing: .9px; text-transform: uppercase; color: var(--muted); }
+.inv-be-v { font-size: 19px; font-weight: 800; letter-spacing: -.4px; color: var(--blue); margin-top: 3px; }
+.inv-be-v-d { color: #93c5fd; }
+
+/* ===== SLIDE 11 — WHY NOW ===== */
+.why-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 11px; flex: 1; }
+.why-item { background: var(--white); border: 1px solid var(--rule); border-radius: 10px; padding: 17px 19px; display: flex; gap: 13px; align-items: flex-start; }
+.why-num  { font-size: 26px; font-weight: 900; color: var(--rule); letter-spacing: -1px; line-height: 1; flex-shrink: 0; font-variant-numeric: tabular-nums; min-width: 30px; }
+.why-title { font-size: 13px; font-weight: 700; color: var(--ink); }
+.why-body  { font-size: 12px; color: var(--muted); line-height: 1.55; margin-top: 3px; }
+.why-body strong { color: var(--ink-3); font-weight: 600; }
+.why-banner { grid-column: 1 / -1; background: var(--ink); border-radius: 10px; padding: 16px 22px; display: flex; align-items: center; gap: 15px; }
+.why-banner-body { font-size: 13px; color: rgba(255,255,255,.68); line-height: 1.6; }
+.why-banner-body strong { color: white; }
+.why-banner-body em { color: #60a5fa; font-style: normal; font-weight: 600; }
+
+/* ===== SLIDE 12 — CLOSING ===== */
+.closing { background: var(--ink); flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 52px 72px; position: relative; overflow: hidden; }
+.cg { position: absolute; border-radius: 50%; filter: blur(100px); opacity: .1; pointer-events: none; }
+.cg1 { width: 500px; height: 500px; background: #2563eb; top: -150px; left: -100px; }
+.cg2 { width: 300px; height: 300px; background: #0d9488; bottom: -60px; right: -40px; }
+.closing-eye { font-size: 10px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,.28); margin-bottom: 20px; position: relative; z-index: 1; }
+.closing-title { font-size: 30px; font-weight: 800; color: white; letter-spacing: -1px; line-height: 1.25; max-width: 620px; position: relative; z-index: 1; }
+.closing-title em { color: #60a5fa; font-style: normal; }
+.closing-rule { width: 48px; height: 1px; background: rgba(255,255,255,.12); margin: 28px auto; }
+.closing-metrics { display: flex; gap: 0; align-items: stretch; position: relative; z-index: 1; }
+.cm { padding: 0 26px; text-align: center; border-right: 1px solid rgba(255,255,255,.07); }
+.cm:last-child { border-right: none; }
+.cm-v { font-size: 24px; font-weight: 800; color: white; letter-spacing: -1px; font-variant-numeric: tabular-nums; }
+.cm-l { font-size: 10.5px; color: rgba(255,255,255,.3); margin-top: 4px; font-weight: 500; }
+.closing-contact { margin-top: 34px; font-size: 11.5px; color: rgba(255,255,255,.25); position: relative; z-index: 1; }
+</style>
+</head>
+<body>
+
+<!-- SLIDE 1 — COVER -->
+<div class="slide active" id="slide-1">
+  <div class="cover">
+    <div class="cover-left">
+      <div class="cover-logo">
+        <div class="cover-logo-mark">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="8.5" width="14" height="8" rx="1.5" stroke="white" stroke-width="1.5"/><path d="M5 8.5V6C5 4.343 6.343 3 8 3h2c1.657 0 3 1.343 3 3v2.5" stroke="white" stroke-width="1.5"/><circle cx="9" cy="12.5" r="1.4" fill="white"/></svg>
+        </div>
+        <span class="cover-logo-name">Kondo</span>
+      </div>
+      <div>
+        <h1 class="cover-title">Gestão de<br/>condomínios<br/><em>reinventada.</em></h1>
+        <p class="cover-tagline">Plataforma AI-native que substitui planilha + WhatsApp + administradora cara para condomínios pequenos e médios.</p>
+      </div>
+      <div class="cover-pills">
+        <span class="cover-pill cover-pill-accent">SaaS · AI-native</span>
+        <span class="cover-pill">Pitch Comercial 2025</span>
+        <span class="cover-pill">Seed Stage</span>
+      </div>
+    </div>
+    <div class="cover-right">
+      <div class="c-glow c-glow-1"></div>
+      <div class="c-glow c-glow-2"></div>
+      <div class="cover-cards">
+        <div class="cover-card hl"><div class="cl">TAM Software</div><div class="cv">R$&thinsp;1,25B</div><div class="cs">mercado anual</div></div>
+        <div class="cover-card"><div class="cl">Margem Bruta</div><div class="cv">93%</div><div class="cs">custo marginal irrisório</div></div>
+        <div class="cover-card"><div class="cl">LTV / CAC</div><div class="cv">5–10×</div><div class="cs">payback 3–4 meses</div></div>
+        <div class="cover-card"><div class="cl">Upside Fintech</div><div class="cv">R$&thinsp;1,3M</div><div class="cs">receita adicional/mês</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 2 — MERCADO -->
+<div class="slide" style="background:var(--surface)" id="slide-2">
+  <div class="s-header">
+    <div class="s-header-left"><span class="s-eyebrow">Oportunidade</span><h2 class="s-title">O Mercado</h2><p class="s-subtitle">R$&nbsp;300 bilhões/ano. 520 mil condomínios. Nenhum líder digital.</p></div>
+    <span class="s-num">02 · 12</span>
+  </div>
+  <div class="s-rule"></div>
+  <div class="s-body">
+    <div class="market-grid">
+      <div class="mcard blue">
+        <div style="display:flex;align-items:center;gap:9px">
+          <div class="mcard-icon" style="background:#eff6ff"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1" y="6.5" width="13" height="7" rx="1" stroke="#2563eb" stroke-width="1.35"/><path d="M4 6.5V5C4 3.343 5.343 2 7 2h1c1.657 0 3 1.343 3 3v1.5" stroke="#2563eb" stroke-width="1.35"/><circle cx="7.5" cy="10" r="1.1" fill="#2563eb"/></svg></div>
+          <span class="label-xs" style="color:var(--blue)">Condomínios ativos</span>
+        </div>
+        <div class="num-xl c-blue">520.000</div>
+        <p class="mcard-desc">Mercado pulverizado, sem player dominante. Condomínios pequenos e médios sem solução adequada.</p>
+      </div>
+      <div class="mcard amber">
+        <div style="display:flex;align-items:center;gap:9px">
+          <div class="mcard-icon" style="background:#fffbeb"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="5.5" stroke="#d97706" stroke-width="1.35"/><path d="M7.5 4.5V8l2 1.2" stroke="#d97706" stroke-width="1.35" stroke-linecap="round"/></svg></div>
+          <span class="label-xs" style="color:var(--amber)">Movimentação anual</span>
+        </div>
+        <div class="num-xl c-amber">R$&thinsp;300bi</div>
+        <p class="mcard-desc">Receita recorrente via taxas condominiais. Fluxo financeiro previsível e estruturável.</p>
+      </div>
+      <div class="mcard red">
+        <div style="display:flex;align-items:center;gap:9px">
+          <div class="mcard-icon" style="background:#fef2f2"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M7.5 1.5L13.5 12.5H1.5L7.5 1.5Z" stroke="#dc2626" stroke-width="1.35" stroke-linejoin="round"/><path d="M7.5 5.5v3M7.5 10v.5" stroke="#dc2626" stroke-width="1.35" stroke-linecap="round"/></svg></div>
+          <span class="label-xs" style="color:var(--red)">Inadimplência média</span>
+        </div>
+        <div class="num-xl c-red">14%</div>
+        <p class="mcard-desc">Em alta — dor financeira imediata e mensurável. Síndicos precisam de ferramenta agora.</p>
+        <div><span class="badge badge-red">↑ crescendo</span></div>
+      </div>
+      <div class="mcard teal">
+        <div style="display:flex;align-items:center;gap:9px">
+          <div class="mcard-icon" style="background:#f0fdfa"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="2" y="2.5" width="11" height="10" rx="1.5" stroke="#0d9488" stroke-width="1.35"/><path d="M4.5 6.5h6M4.5 9h4" stroke="#0d9488" stroke-width="1.35" stroke-linecap="round"/></svg></div>
+          <span class="label-xs" style="color:var(--teal)">Software condominial</span>
+        </div>
+        <div class="num-xl c-teal">R$&thinsp;1,25bi</div>
+        <p class="mcard-desc">Já existe e já paga. ERPs legados, sem IA, sem experiência do morador, sem visão fintech.</p>
+        <div><span class="badge" style="background:#f0fdfa;color:#0d9488;border:1px solid #99f6e4">janela aberta</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 3 — PROBLEMA -->
+<div class="slide" style="background:var(--surface)" id="slide-3">
+  <div class="s-header">
+    <div class="s-header-left"><span class="s-eyebrow">Diagnóstico</span><h2 class="s-title">O Problema</h2><p class="s-subtitle">Três personas, um mesmo caos operacional — sem canal único, sem visibilidade, sem dados.</p></div>
+    <span class="s-num">03 · 12</span>
+  </div>
+  <div class="s-rule"></div>
+  <div class="s-body" style="flex-direction:column;gap:11px">
+    <div class="problem-grid">
+      <div class="pcol">
+        <div class="pcol-head">
+          <div class="pcol-avatar" style="background:#eff6ff"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="6" r="2.8" stroke="#2563eb" stroke-width="1.35"/><path d="M2 14c0-3.314 2.686-6 6-6s6 2.686 6 6" stroke="#2563eb" stroke-width="1.35" stroke-linecap="round"/></svg></div>
+          <div><div class="pcol-name">Síndico</div><div class="pcol-role">Operação e controle</div></div>
+        </div>
+        <div class="pain-list">
+          <div class="pain-item hot"><div class="pain-dot"></div>Chamados chegam por WhatsApp e se perdem</div>
+          <div class="pain-item hot"><div class="pain-dot"></div>Inadimplência em planilhas desatualizadas</div>
+          <div class="pain-item"><div class="pain-dot"></div>Balancetes em PDF que ninguém lê</div>
+          <div class="pain-item"><div class="pain-dot"></div>Comunicados feitos no Word, um a um</div>
+        </div>
+      </div>
+      <div class="pcol">
+        <div class="pcol-head">
+          <div class="pcol-avatar" style="background:#f0fdf4"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="3" y="2.5" width="10" height="11" rx="1.5" stroke="#16a34a" stroke-width="1.35"/><path d="M5.5 8h5M5.5 5.5h5M5.5 10.5h3" stroke="#16a34a" stroke-width="1.35" stroke-linecap="round"/></svg></div>
+          <div><div class="pcol-name">Conselho</div><div class="pcol-role">Governança e auditoria</div></div>
+        </div>
+        <div class="pain-list">
+          <div class="pain-item hot"><div class="pain-dot"></div>Visibilidade apenas em reunião mensal</div>
+          <div class="pain-item hot"><div class="pain-dot"></div>Recebe PDFs densos e incompreensíveis</div>
+          <div class="pain-item"><div class="pain-dot"></div>Não consegue auditar decisões passadas</div>
+          <div class="pain-item"><div class="pain-dot"></div>Dependente do síndico para qualquer dado</div>
+        </div>
+      </div>
+      <div class="pcol">
+        <div class="pcol-head">
+          <div class="pcol-avatar" style="background:#fffbeb"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="7.5" width="12" height="7" rx="1.2" stroke="#d97706" stroke-width="1.35"/><path d="M5 7.5V5.5C5 3.843 6.343 2.5 8 2.5s3 1.343 3 3v2" stroke="#d97706" stroke-width="1.35"/><circle cx="8" cy="11.2" r="1.1" fill="#d97706"/></svg></div>
+          <div><div class="pcol-name">Morador</div><div class="pcol-role">Self-service</div></div>
+        </div>
+        <div class="pain-list">
+          <div class="pain-item hot"><div class="pain-dot"></div>Chamado aberto por mensagem, sem retorno</div>
+          <div class="pain-item hot"><div class="pain-dot"></div>Não sabe o status de nada</div>
+          <div class="pain-item"><div class="pain-dot"></div>Regras espalhadas em PDFs antigos</div>
+          <div class="pain-item"><div class="pain-dot"></div>Precisa ligar pro síndico para tudo</div>
+        </div>
+      </div>
+    </div>
+    <div class="problem-note">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" style="flex-shrink:0;color:var(--muted-2);margin-top:1px"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.35"/><path d="M8 5v4M8 10.5v.5" stroke="currentColor" stroke-width="1.35" stroke-linecap="round"/></svg>
+      <span>O resultado é <strong style="color:var(--ink)">ineficiência operacional, baixa transparência e exposição financeira crescente</strong> — em todos os três lados do mesmo condomínio.</span>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 4 — PRODUTO -->
+<div class="slide" style="background:var(--surface)" id="slide-4">
+  <div class="s-header">
+    <div class="s-header-left"><span class="s-eyebrow">Solução</span><h2 class="s-title">O Produto</h2><p class="s-subtitle">Uma plataforma, três experiências conectadas por IA.</p></div>
+    <span class="s-num">04 · 12</span>
+  </div>
+  <div class="s-rule"></div>
+  <div class="s-body">
+    <div class="product-grid">
+      <div class="prodcol">
+        <div class="prodcol-head">
+          <div class="prodcol-icon" style="background:#eff6ff"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="1.5" y="1.5" width="13" height="13" rx="2" stroke="#2563eb" stroke-width="1.35"/><path d="M4.5 8h2M4.5 5.5h7M4.5 10.5h4" stroke="#2563eb" stroke-width="1.35" stroke-linecap="round"/><circle cx="11.5" cy="8" r="1.5" fill="#2563eb"/></svg></div>
+          <div class="prodcol-title">Síndico</div><div class="prodcol-sub">Controle e automação</div>
+        </div>
+        <div class="feat-list">
+          <div class="check-item"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" fill="#eff6ff"/><path d="M4 6.5l1.8 1.8 3-3" stroke="#2563eb" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Dashboard de prioridades com IA</div>
+          <div class="check-item"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" fill="#eff6ff"/><path d="M4 6.5l1.8 1.8 3-3" stroke="#2563eb" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Chamados classificados automaticamente</div>
+          <div class="check-item"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" fill="#eff6ff"/><path d="M4 6.5l1.8 1.8 3-3" stroke="#2563eb" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Comunicados gerados por IA</div>
+          <div class="check-item"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" fill="#eff6ff"/><path d="M4 6.5l1.8 1.8 3-3" stroke="#2563eb" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Inadimplência + simulação de acordos</div>
+          <div class="check-item"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" fill="#eff6ff"/><path d="M4 6.5l1.8 1.8 3-3" stroke="#2563eb" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Prestação de contas em linguagem clara</div>
+        </div>
+      </div>
+      <div class="prodcol">
+        <div class="prodcol-head">
+          <div class="prodcol-icon" style="background:#f0fdf4"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="2" stroke="#16a34a" stroke-width="1.35"/><path d="M5 8h6M5 5.5h6M5 10.5h3.5" stroke="#16a34a" stroke-width="1.35" stroke-linecap="round"/></svg></div>
+          <div class="prodcol-title">Conselho</div><div class="prodcol-sub">Transparência e governança</div>
+        </div>
+        <div class="feat-list">
+          <div class="check-item"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" fill="#f0fdf4"/><path d="M4 6.5l1.8 1.8 3-3" stroke="#16a34a" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Despesas e inadimplência em tempo real</div>
+          <div class="check-item"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" fill="#f0fdf4"/><path d="M4 6.5l1.8 1.8 3-3" stroke="#16a34a" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Histórico de decisões e atas</div>
+          <div class="check-item"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" fill="#f0fdf4"/><path d="M4 6.5l1.8 1.8 3-3" stroke="#16a34a" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Auditoria de orçamentos e obras</div>
+          <div class="check-item"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" fill="#f0fdf4"/><path d="M4 6.5l1.8 1.8 3-3" stroke="#16a34a" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Indicadores sem depender de reunião</div>
+          <div class="check-item"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" fill="#f0fdf4"/><path d="M4 6.5l1.8 1.8 3-3" stroke="#16a34a" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Documentos pesquisáveis por IA</div>
+        </div>
+      </div>
+      <div class="prodcol">
+        <div class="prodcol-head">
+          <div class="prodcol-icon" style="background:#fffbeb"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="6.5" r="2.5" stroke="#d97706" stroke-width="1.35"/><path d="M2.5 14.5c0-3.038 2.462-5.5 5.5-5.5s5.5 2.462 5.5 5.5" stroke="#d97706" stroke-width="1.35" stroke-linecap="round"/></svg></div>
+          <div class="prodcol-title">Morador</div><div class="prodcol-sub">Self-service completo</div>
+        </div>
+        <div class="feat-list">
+          <div class="check-item"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" fill="#fffbeb"/><path d="M4 6.5l1.8 1.8 3-3" stroke="#d97706" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Abertura e acompanhamento de chamados</div>
+          <div class="check-item"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" fill="#fffbeb"/><path d="M4 6.5l1.8 1.8 3-3" stroke="#d97706" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Status em tempo real com protocolo</div>
+          <div class="check-item"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" fill="#fffbeb"/><path d="M4 6.5l1.8 1.8 3-3" stroke="#d97706" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Regimento por linguagem natural</div>
+          <div class="check-item"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" fill="#fffbeb"/><path d="M4 6.5l1.8 1.8 3-3" stroke="#d97706" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Comunicados e documentos permitidos</div>
+          <div class="check-item"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><circle cx="6.5" cy="6.5" r="5.5" fill="#fffbeb"/><path d="M4 6.5l1.8 1.8 3-3" stroke="#d97706" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>Zero dependência de ligar pro síndico</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 5 — COMPETIÇÃO -->
+<div class="slide" style="background:var(--surface)" id="slide-5">
+  <div class="s-header">
+    <div class="s-header-left"><span class="s-eyebrow">Posicionamento</span><h2 class="s-title">Diferenciação Competitiva</h2><p class="s-subtitle">Nenhum competidor AI-native consolidado no Brasil. A janela está aberta.</p></div>
+    <span class="s-num">05 · 12</span>
+  </div>
+  <div class="s-rule"></div>
+  <div class="s-body">
+    <div class="comp-layout">
+      <div class="comp-table-wrap">
+        <table class="comp-table">
+          <thead><tr><th>Capacidade</th><th>ERPs</th><th>Apps</th><th>Administ.</th><th class="kc">Kondo</th></tr></thead>
+          <tbody>
+            <tr><td class="fc">AI-native</td><td><span class="ic-x">—</span></td><td><span class="ic-x">—</span></td><td><span class="ic-x">—</span></td><td class="kc"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" fill="#eff6ff"/><path d="M4.5 7l2 2 3-3" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></td></tr>
+            <tr><td class="fc">Experiência do morador</td><td><span class="ic-x">—</span></td><td><span class="ic-p">parcial</span></td><td><span class="ic-x">—</span></td><td class="kc"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" fill="#eff6ff"/><path d="M4.5 7l2 2 3-3" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></td></tr>
+            <tr><td class="fc">Transparência para conselho</td><td><span class="ic-p">parcial</span></td><td><span class="ic-x">—</span></td><td><span class="ic-x">—</span></td><td class="kc"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" fill="#eff6ff"/><path d="M4.5 7l2 2 3-3" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></td></tr>
+            <tr><td class="fc">Preço acessível</td><td><span class="ic-x">—</span></td><td><span class="ic-x">—</span></td><td><span class="ic-x">—</span></td><td class="kc"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" fill="#eff6ff"/><path d="M4.5 7l2 2 3-3" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></td></tr>
+            <tr><td class="fc">Visão fintech / crédito</td><td><span class="ic-x">—</span></td><td><span class="ic-x">—</span></td><td><span class="ic-x">—</span></td><td class="kc"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" fill="#eff6ff"/><path d="M4.5 7l2 2 3-3" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></td></tr>
+            <tr><td class="fc">Setup em minutos</td><td><span class="ic-x">—</span></td><td><span class="ic-p">parcial</span></td><td><span class="ic-x">—</span></td><td class="kc"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" fill="#eff6ff"/><path d="M4.5 7l2 2 3-3" stroke="#2563eb" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="comp-sidebar">
+        <div class="comp-pos">
+          <div style="flex:1"></div>
+          <p class="comp-pos-q">"Kondo não compete com ERPs por features. Compete com a administradora pelo custo e com o WhatsApp pela organização."</p>
+          <p class="comp-pos-a">— Posicionamento de produto</p>
+        </div>
+        <div class="card card-surface" style="padding:13px 15px">
+          <div class="label-xs" style="margin-bottom:7px">Vantagem de preço</div>
+          <div style="font-size:12px;color:var(--ink-3);line-height:1.55">Administradora cobra <strong style="color:var(--ink)">R$&nbsp;1.200–1.800/mês</strong> para um condo de R$&nbsp;15K. Kondo parte de <strong style="color:var(--blue)">R$&nbsp;199</strong> — 3–9× mais barato.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 6 — PRICING -->
+<div class="slide" style="background:var(--surface)" id="slide-6">
+  <div class="s-header">
+    <div class="s-header-left"><span class="s-eyebrow">Modelo de Receita</span><h2 class="s-title">Planos e Preços</h2><p class="s-subtitle">Administradora cobra 8–12% da arrecadação. Kondo parte de R$&nbsp;199.</p></div>
+    <span class="s-num">06 · 12</span>
+  </div>
+  <div class="s-rule"></div>
+  <div class="s-body" style="flex-direction:column;gap:11px">
+    <div class="pricing-row">
+      <div class="plan">
+        <div class="pn">Essencial</div><div class="pp">R$&thinsp;199</div><div class="per">por condomínio/mês</div>
+        <div class="p-div"></div>
+        <div class="pf"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" fill="#eff6ff"/><path d="M3.5 6l1.7 1.7 3-3" stroke="#2563eb" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Até ~30 unidades</div>
+        <div class="pf"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" fill="#eff6ff"/><path d="M3.5 6l1.7 1.7 3-3" stroke="#2563eb" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Chamados + IA básica</div>
+        <div class="pf"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" fill="#eff6ff"/><path d="M3.5 6l1.7 1.7 3-3" stroke="#2563eb" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Portal do morador</div>
+        <div class="pf"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" fill="#eff6ff"/><path d="M3.5 6l1.7 1.7 3-3" stroke="#2563eb" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Comunicados</div>
+        <div class="pnote">Saída do WhatsApp e planilha</div>
+      </div>
+      <div class="plan feat">
+        <div class="plan-badge-wrap"><div class="plan-badge">Mais popular</div></div>
+        <div class="pn pn-w">Profissional</div><div class="pp pp-w">R$&thinsp;349</div><div class="per per-w">por condomínio/mês</div>
+        <div class="p-div p-div-d"></div>
+        <div class="pf pf-w"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" fill="rgba(255,255,255,.08)"/><path d="M3.5 6l1.7 1.7 3-3" stroke="#93c5fd" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Até ~80 unidades</div>
+        <div class="pf pf-w"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" fill="rgba(255,255,255,.08)"/><path d="M3.5 6l1.7 1.7 3-3" stroke="#93c5fd" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Financeiro completo</div>
+        <div class="pf pf-w"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" fill="rgba(255,255,255,.08)"/><path d="M3.5 6l1.7 1.7 3-3" stroke="#93c5fd" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Inadimplência + acordos</div>
+        <div class="pf pf-w"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" fill="rgba(255,255,255,.08)"/><path d="M3.5 6l1.7 1.7 3-3" stroke="#93c5fd" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Documentos com IA</div>
+        <div class="pnote pnote-w">Sweet spot — condos médios que querem largar a administradora</div>
+      </div>
+      <div class="plan">
+        <div class="pn">Avançado</div><div class="pp">R$&thinsp;549</div><div class="per">por condomínio/mês</div>
+        <div class="p-div"></div>
+        <div class="pf"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" fill="#eff6ff"/><path d="M3.5 6l1.7 1.7 3-3" stroke="#2563eb" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Unidades ilimitadas</div>
+        <div class="pf"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" fill="#eff6ff"/><path d="M3.5 6l1.7 1.7 3-3" stroke="#2563eb" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Todos os módulos</div>
+        <div class="pf"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" fill="#eff6ff"/><path d="M3.5 6l1.7 1.7 3-3" stroke="#2563eb" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Módulos fintech</div>
+        <div class="pf"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" fill="#eff6ff"/><path d="M3.5 6l1.7 1.7 3-3" stroke="#2563eb" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Relatórios avançados</div>
+        <div class="pnote">Condomínios grandes com gestão madura</div>
+      </div>
+      <div class="plan" style="border-color:#bfdbfe">
+        <div class="pn" style="color:var(--blue)">Enterprise</div><div class="pp">R$&thinsp;1.200+</div><div class="per">por mês</div>
+        <div class="p-div"></div>
+        <div class="pf"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" fill="#eff6ff"/><path d="M3.5 6l1.7 1.7 3-3" stroke="#2563eb" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Multi-condomínio</div>
+        <div class="pf"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" fill="#eff6ff"/><path d="M3.5 6l1.7 1.7 3-3" stroke="#2563eb" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>SLA dedicado</div>
+        <div class="pf"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" fill="#eff6ff"/><path d="M3.5 6l1.7 1.7 3-3" stroke="#2563eb" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>White-label</div>
+        <div class="pf"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><circle cx="6" cy="6" r="5" fill="#eff6ff"/><path d="M3.5 6l1.7 1.7 3-3" stroke="#2563eb" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Integrações custom</div>
+        <div class="pnote">Síndicos profissionais 5+ condos</div>
+      </div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--rule);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--muted);line-height:1.5"><strong style="color:var(--ink)">Comparativo:</strong> Administradora cobra R$&nbsp;1.200–1.800/mês para um condo de R$&nbsp;15K. Kondo entrega mais por <strong style="color:var(--blue)">3–9× menos</strong>. A proposta de valor financeira é imediata.</div>
+  </div>
+</div>
+
+<!-- SLIDE 7 — UNIT ECONOMICS -->
+<div class="slide" style="background:var(--surface)" id="slide-7">
+  <div class="s-header">
+    <div class="s-header-left"><span class="s-eyebrow">Economia</span><h2 class="s-title">Unit Economics</h2><p class="s-subtitle">Custo marginal de IA irrisório — margem de software enterprise com preço acessível.</p></div>
+    <span class="s-num">07 · 12</span>
+  </div>
+  <div class="s-rule"></div>
+  <div class="s-body">
+    <div class="econ-layout">
+      <div class="econ-left">
+        <div class="margin-card">
+          <div><div class="label-xs" style="color:rgba(255,255,255,.35);margin-bottom:7px">Margem bruta por condomínio</div><div class="m-track"><div class="m-fill" style="width:93%"></div></div></div>
+          <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:48px;font-weight:900;color:white;letter-spacing:-2.5px;line-height:1;font-variant-numeric:tabular-nums">93%</span><span style="font-size:11.5px;color:rgba(255,255,255,.35)">sobre R$&nbsp;349/mês</span></div>
+        </div>
+        <div class="econ-row">
+          <div class="econ-stat"><div class="label-xs">Payback do CAC</div><div class="econ-stat-val c-amber">3–4 meses</div></div>
+          <div class="econ-stat"><div class="label-xs">LTV / CAC</div><div class="econ-stat-val c-green">5–10×</div></div>
+        </div>
+      </div>
+      <div class="econ-right">
+        <div class="card" style="flex:1;padding:16px 18px">
+          <div class="label-xs" style="margin-bottom:11px">Custo variável / condomínio / mês</div>
+          <div class="row-item"><span class="row-item-label">IA — chamadas de LLM</span><span class="row-item-val c-blue">R$&nbsp;5</span></div>
+          <div class="row-item"><span class="row-item-label">Servidor e banco de dados</span><span class="row-item-val c-blue">R$&nbsp;8</span></div>
+          <div class="row-item"><span class="row-item-label">Suporte e operação</span><span class="row-item-val c-blue">R$&nbsp;12</span></div>
+          <div class="row-item" style="border-top:2px solid var(--rule);margin-top:3px;padding-top:9px"><span class="row-item-label" style="font-weight:700;color:var(--ink)">Total custo variável</span><span class="row-item-val c-ink" style="font-size:15px">R$&nbsp;25</span></div>
+        </div>
+        <div class="card card-surface" style="padding:13px 15px"><div class="label-xs" style="margin-bottom:6px">Por que 93% é sustentável</div><div style="font-size:12px;color:var(--muted);line-height:1.55">Custo marginal de IA <strong style="color:var(--ink-3)">continua caindo</strong>. O que era inviável há 2 anos hoje é R$&nbsp;5/condo/mês — e tende a zero.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 8 — PROJEÇÃO -->
+<div class="slide" style="background:var(--surface)" id="slide-8">
+  <div class="s-header">
+    <div class="s-header-left"><span class="s-eyebrow">Crescimento</span><h2 class="s-title">Projeção de Receita</h2><p class="s-subtitle">Plano médio R$&nbsp;350/mês. Breakeven operacional em ~100 condomínios.</p></div>
+    <span class="s-num">08 · 12</span>
+  </div>
+  <div class="s-rule"></div>
+  <div class="s-body">
+    <div class="proj-layout">
+      <div class="proj-left">
+        <div class="proj-table-wrap">
+          <table class="pt">
+            <thead><tr><th>Período</th><th>Condos (cons.)</th><th>Condos (otim.)</th><th class="r">MRR (cons.)</th><th class="r">MRR (otim.)</th></tr></thead>
+            <tbody>
+              <tr><td class="yl">Ano 1</td><td>150</td><td class="bl">300</td><td class="r">R$&nbsp;52K</td><td class="r bl">R$&nbsp;105K</td></tr>
+              <tr><td class="yl">Ano 2</td><td>600</td><td class="bl">1.500</td><td class="r">R$&nbsp;210K</td><td class="r bl">R$&nbsp;525K</td></tr>
+              <tr><td class="yl">Ano 3</td><td>2.000</td><td class="bl">6.000</td><td class="r b">R$&nbsp;700K</td><td class="r bl b">R$&nbsp;2,1M</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card" style="padding:12px 15px"><div class="label-xs" style="margin-bottom:5px">Canal principal</div><div style="font-size:12px;color:var(--muted);line-height:1.5">Síndico profissional como multiplicador: <strong style="color:var(--ink-3)">1 Enterprise = 5–20 condos</strong>. Parcerias com administradoras que querem se digitalizar.</div></div>
+      </div>
+      <div class="proj-right">
+        <div class="proj-callout" style="background:var(--ink);color:white;flex:1"><div class="pc-l" style="color:white">Breakeven operacional</div><div class="pc-v" style="color:white;font-size:30px">~100 condos</div><div class="pc-s" style="color:white">Com estrutura enxuta de Fase 1. Atingível antes do Ano 1.</div></div>
+        <div class="proj-callout" style="background:var(--blue);color:white;flex:1"><div class="pc-l" style="color:white">TAM só software</div><div class="pc-v" style="color:white;font-size:26px">R$&nbsp;1,25bi/ano</div><div class="pc-s" style="color:white">Sem o upside fintech — que multiplica a receita sem crescer a base.</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 9 — FINTECH -->
+<div class="slide" style="background:var(--surface)" id="slide-9">
+  <div class="s-header">
+    <div class="s-header-left"><span class="s-eyebrow">Upside Real</span><h2 class="s-title">A Camada Fintech</h2><p class="s-subtitle">Com 2.000 condos, R$&nbsp;40M/mês fluem pela plataforma. Receita adicional sem crescer a base.</p></div>
+    <span class="s-num">09 · 12</span>
+  </div>
+  <div class="s-rule"></div>
+  <div class="s-body">
+    <div class="fintech-layout">
+      <div class="fintech-left">
+        <div class="fintech-volume"><div class="fv-l">Volume financeiro mensal (2.000 condos)</div><div class="fv-v">R$&thinsp;40M/mês</div><div class="fv-s">2.000 condos × R$&nbsp;20K arrecadação média</div></div>
+        <div class="card" style="flex:1;padding:15px 17px">
+          <div class="label-xs" style="margin-bottom:9px">Roadmap fintech</div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div style="display:flex;gap:8px;align-items:center;font-size:11.5px;color:var(--muted)"><span class="badge badge-blue">F2</span> Boleto e cobrança integrados</div>
+            <div style="display:flex;gap:8px;align-items:center;font-size:11.5px;color:var(--muted)"><span class="badge badge-blue">F2</span> Recuperação de inadimplência</div>
+            <div style="display:flex;gap:8px;align-items:center;font-size:11.5px;color:var(--muted)"><span class="badge badge-green">F3</span> Antecipação de recebíveis</div>
+            <div style="display:flex;gap:8px;align-items:center;font-size:11.5px;color:var(--muted)"><span class="badge badge-amber">F4</span> Score condominial + crédito para obras</div>
+          </div>
+        </div>
+      </div>
+      <div class="fintech-right">
+        <div class="label-xs" style="color:var(--muted);padding:0 0 4px">Produtos adicionais — receita estimada / mês</div>
+        <div class="fp"><span class="fp-n">Boletos e split de pagamento (MDR ~0,5%)</span><span class="fp-v">R$&nbsp;200K</span></div>
+        <div class="fp"><span class="fp-n">Recuperação de inadimplência (comissão)</span><span class="fp-v">R$&nbsp;280K</span></div>
+        <div class="fp"><span class="fp-n">Antecipação de recebíveis (spread 1,5–2%)</span><span class="fp-v">R$&nbsp;160K</span></div>
+        <div class="fp" style="background:var(--surface)"><span class="fp-n" style="color:var(--muted)">Crédito para obras (futuro)</span><span style="font-size:11px;font-weight:600;color:var(--muted-2)">a definir</span></div>
+        <div class="fintech-total"><span class="ft-l">Total adicional sobre o SaaS</span><span class="ft-v">até R$&thinsp;1,3M/mês</span></div>
+        <div class="fintech-moat">O SaaS paga a operação. <strong>O fluxo financeiro dos condomínios paga o upside.</strong> Dois modelos empilhados na mesma base.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 10 — INVESTIMENTO -->
+<div class="slide" style="background:var(--surface)" id="slide-10">
+  <div class="s-header">
+    <div class="s-header-left"><span class="s-eyebrow">Capital</span><h2 class="s-title">Investimento Necessário</h2><p class="s-subtitle">Duas fases com objetivos mensuráveis e uso de recursos definido.</p></div>
+    <span class="s-num">10 · 12</span>
+  </div>
+  <div class="s-rule"></div>
+  <div class="s-body">
+    <div class="inv-layout">
+      <div class="inv-phase">
+        <div class="inv-head"><div class="inv-tag c-blue">Fase 1 — Bootstrap</div><div class="inv-amt c-ink">R$&nbsp;117K</div><div class="inv-goal">9 meses · meta: 150 condomínios pagantes</div></div>
+        <div style="flex:1">
+          <div class="row-item"><span class="row-item-label">Infraestrutura e APIs (IA, servidor)</span><span class="row-item-val c-blue">R$&nbsp;18K</span></div>
+          <div class="row-item"><span class="row-item-label">Marketing e aquisição</span><span class="row-item-val c-blue">R$&nbsp;30K</span></div>
+          <div class="row-item"><span class="row-item-label">Operação e suporte</span><span class="row-item-val c-blue">R$&nbsp;45K</span></div>
+          <div class="row-item"><span class="row-item-label">Legal e compliance mínimo</span><span class="row-item-val c-blue">R$&nbsp;12K</span></div>
+          <div class="row-item"><span class="row-item-label">Reserva operacional</span><span class="row-item-val c-blue">R$&nbsp;12K</span></div>
+        </div>
+        <div class="inv-be"><div class="inv-be-l">Breakeven nesta fase</div><div class="inv-be-v">~100 condos</div></div>
+      </div>
+      <div class="inv-phase inv-dark">
+        <div class="inv-head inv-head-d"><div class="inv-tag" style="color:#93c5fd">Seed Round</div><div class="inv-amt" style="color:white">R$&nbsp;800K – 1,2M</div><div class="inv-goal inv-goal-d">Após validação · meta: 1.500 condomínios</div></div>
+        <div style="flex:1">
+          <div class="row-item" style="border-color:rgba(255,255,255,.07)"><span style="font-size:12.5px;color:rgba(255,255,255,.55)">Time (eng ×3, CS, growth)</span><span style="font-size:13px;font-weight:700;color:white;font-variant-numeric:tabular-nums">~45%</span></div>
+          <div class="row-item" style="border-color:rgba(255,255,255,.07)"><span style="font-size:12.5px;color:rgba(255,255,255,.55)">Marketing e parcerias</span><span style="font-size:13px;font-weight:700;color:white;font-variant-numeric:tabular-nums">~25%</span></div>
+          <div class="row-item" style="border-color:rgba(255,255,255,.07)"><span style="font-size:12.5px;color:rgba(255,255,255,.55)">Produto (fintech, mobile, WhatsApp)</span><span style="font-size:13px;font-weight:700;color:white;font-variant-numeric:tabular-nums">~20%</span></div>
+          <div class="row-item" style="border-color:rgba(255,255,255,.07)"><span style="font-size:12.5px;color:rgba(255,255,255,.55)">Infra e compliance PCI/LGPD</span><span style="font-size:13px;font-weight:700;color:white;font-variant-numeric:tabular-nums">~10%</span></div>
+        </div>
+        <div class="inv-be inv-be-d"><div class="inv-be-l">Meta pós-Seed</div><div class="inv-be-v inv-be-v-d">MRR &gt; R$&nbsp;525K</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 11 — WHY NOW -->
+<div class="slide" style="background:var(--surface)" id="slide-11">
+  <div class="s-header">
+    <div class="s-header-left"><span class="s-eyebrow">Timing</span><h2 class="s-title">Por Que Agora</h2><p class="s-subtitle">Cinco fatores convergindo. A janela de entrada está aberta — mas não vai ficar.</p></div>
+    <span class="s-num">11 · 12</span>
+  </div>
+  <div class="s-rule"></div>
+  <div class="s-body">
+    <div class="why-grid">
+      <div class="why-item"><div class="why-num">01</div><div><div class="why-title">Produto construído</div><div class="why-body">Não é tese — é <strong>software rodando</strong>. MVP existe e pode ser validado com clientes reais imediatamente.</div></div></div>
+      <div class="why-item"><div class="why-num">02</div><div><div class="why-title">Custo de IA caiu</div><div class="why-body">O que era inviável há 2 anos custa <strong>R$&nbsp;5/condo/mês</strong>. Margem de 93% é real porque o custo marginal é irrisório.</div></div></div>
+      <div class="why-item"><div class="why-num">03</div><div><div class="why-title">Inadimplência em alta</div><div class="why-body"><strong>14% e crescendo</strong>. Cria urgência imediata — síndicos precisam de ferramenta agora, não daqui a um ano.</div></div></div>
+      <div class="why-item"><div class="why-num">04</div><div><div class="why-title">Janela competitiva</div><div class="why-body">Nenhum <strong>competidor AI-native consolidado no Brasil</strong>. ERPs são legados. Apps são catálogos sem inteligência.</div></div></div>
+      <div class="why-banner">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" style="flex-shrink:0"><path d="M9 1.5L11 7H17L12 10.5L14 16.5L9 13L4 16.5L6 10.5L1 7H7L9 1.5Z" stroke="#60a5fa" stroke-width="1.4" stroke-linejoin="round" fill="rgba(96,165,250,.08)"/></svg>
+        <div class="why-banner-body">Produto pronto + custo baixo + janela competitiva + urgência do cliente = <em>o melhor momento para entrar é agora.</em> <strong>O mercado cresce estruturalmente</strong> com novas construções e verticalização das cidades.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 12 — CLOSING -->
+<div class="slide" id="slide-12">
+  <div class="closing">
+    <div class="cg cg1"></div><div class="cg cg2"></div>
+    <div class="closing-eye">Kondo · Pitch Comercial 2025</div>
+    <h2 class="closing-title">Gestão condominial<br/><em>transparente, automatizada</em><br/>e preparada para crédito.</h2>
+    <div class="closing-rule"></div>
+    <div class="closing-metrics">
+      <div class="cm"><div class="cm-v">93%</div><div class="cm-l">Margem bruta</div></div>
+      <div class="cm"><div class="cm-v">5–10×</div><div class="cm-l">LTV / CAC</div></div>
+      <div class="cm"><div class="cm-v">R$&thinsp;1,3M</div><div class="cm-l">Upside fintech/mês</div></div>
+      <div class="cm"><div class="cm-v">520K</div><div class="cm-l">Condos endereçáveis</div></div>
+    </div>
+    <div class="closing-contact">kondo.app · contato@kondo.app</div>
+  </div>
+</div>
+
+<!-- NAV -->
+<div id="nav">
+  <button id="prev" aria-label="Anterior">&#8592;</button>
+  <div id="nav-dots"></div>
+  <span id="slide-label">1 / 12</span>
+  <button id="next" aria-label="Próximo">&#8594;</button>
+</div>
+<script>
+  const slides = Array.from(document.querySelectorAll('.slide'));
+  const dotsEl = document.getElementById('nav-dots');
+  const lbl = document.getElementById('slide-label');
+  let cur = 0;
+  slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot-nav' + (i === 0 ? ' active' : '');
+    d.addEventListener('click', () => go(i));
+    dotsEl.appendChild(d);
+  });
+  function go(idx) {
+    slides[cur].classList.remove('active');
+    dotsEl.children[cur].classList.remove('active');
+    cur = (idx + slides.length) % slides.length;
+    slides[cur].classList.add('active');
+    dotsEl.children[cur].classList.add('active');
+    lbl.textContent = `${cur + 1} / ${slides.length}`;
+  }
+  document.getElementById('next').addEventListener('click', () => go(cur + 1));
+  document.getElementById('prev').addEventListener('click', () => go(cur - 1));
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') go(cur + 1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   go(cur - 1);
+  });
+</script>
+</body>
+</html>
