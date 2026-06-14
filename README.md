@@ -113,11 +113,18 @@ Arquivos `.env` reais nao devem ser commitados.
 uv run python -m app.seed
 ```
 
-Usuarios demo criados pelo seed usam a senha:
+Condominio criado: **Condominio Jardim Aurora**.
 
-```txt
-kondo123
-```
+Usuarios demo (senha universal: `kondo123`):
+
+| Perfil       | E-mail                  | Papel              | Acesso                                              |
+|--------------|-------------------------|--------------------|-----------------------------------------------------|
+| Sindico      | `sindico@kondo.com`     | `manager`          | Completo: financeiro, chamados, comunicados, IA     |
+| Conselho     | `conselho@kondo.com`    | `board_member`     | Financeiro, documentos, comunicados, governanca     |
+| Morador      | `morador@kondo.com`     | `resident`         | Portal da unidade 304-A, chamados, boletos          |
+| Admin        | `admin@kondo.local`     | `platform_admin`   | Administracao da plataforma (nao aparece no front)  |
+
+Para entrar no frontend, acesse `http://localhost:5173/login` e use um dos e-mails acima com a senha `kondo123`, ou clique nos atalhos de perfil demo na propria tela de login.
 
 ### Migrations
 
