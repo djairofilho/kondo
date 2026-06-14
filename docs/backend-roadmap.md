@@ -67,6 +67,20 @@ Status: implementado.
 - Persistir apenas metadados em `Attachment`.
 - Preparar troca futura para S3, R2 ou Supabase Storage.
 
+### 6. WhatsApp como entrada de chamados
+
+Status: roadmap.
+
+- Receber mensagens por webhook de provedor WhatsApp.
+- Identificar usuario, condominio e unidade quando possivel.
+- Normalizar texto, fotos e videos.
+- Usar IA para classificar intencao, prioridade, risco e dados faltantes.
+- Criar ou atualizar chamados e anexos.
+- Enviar protocolo e atualizacoes de status ao morador.
+- Manter o portal como fonte oficial do historico.
+
+Detalhamento: [WhatsApp](whatsapp.md).
+
 ## Endpoints planejados
 
 ### Health e Auth
@@ -261,6 +275,19 @@ POST /ai/document-question
 POST /ai/vendor-quote-comparison
 
 GET /audit/events
+```
+
+### Integracoes futuras
+
+Status: roadmap.
+
+```txt
+POST /integrations/whatsapp/webhook
+GET  /integrations/whatsapp/conversations
+GET  /integrations/whatsapp/conversations/{conversation_id}
+POST /integrations/whatsapp/conversations/{conversation_id}/reply
+POST /integrations/whatsapp/conversations/{conversation_id}/create-ticket
+POST /integrations/whatsapp/messages/{message_id}/classify-ai
 ```
 
 ## Testes
