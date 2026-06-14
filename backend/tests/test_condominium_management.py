@@ -1,14 +1,17 @@
+from collections.abc import Callable
 from fastapi.testclient import TestClient
 from uuid import uuid4
 
 from app.main import app
 
 
-def test_condominium_unit_resident_and_membership_flow() -> None:
+def test_condominium_unit_resident_and_membership_flow(create_auth_context: Callable[[str, bool], dict]) -> None:
     client = TestClient(app)
+    manager = create_auth_context("manager")
 
     condo_response = client.post(
         "/condominiums",
+        headers=manager["headers"],
         json={"name": "Condominio Teste", "address": "Rua Teste, 1", "city": "Sao Paulo", "state": "SP"},
     )
     assert condo_response.status_code == 200
@@ -16,6 +19,7 @@ def test_condominium_unit_resident_and_membership_flow() -> None:
 
     unit_response = client.post(
         f"/condominiums/{condominium_id}/units",
+        headers=manager["headers"],
         json={"condominium_id": condominium_id, "number": "101", "block": "A"},
     )
     assert unit_response.status_code == 200
@@ -23,6 +27,7 @@ def test_condominium_unit_resident_and_membership_flow() -> None:
 
     resident_response = client.post(
         f"/units/{unit_id}/residents",
+        headers=manager["headers"],
         json={"unit_id": unit_id, "name": "Morador Teste", "email": "morador@kondo.local", "resident_type": "tenant"},
     )
     assert resident_response.status_code == 200
@@ -35,11 +40,12 @@ def test_condominium_unit_resident_and_membership_flow() -> None:
 
     membership_response = client.post(
         f"/condominiums/{condominium_id}/memberships",
+        headers=manager["headers"],
         json={"user_id": user_id, "condominium_id": condominium_id, "role": "manager"},
     )
     assert membership_response.status_code == 200
 
-    overview = client.get(f"/condominiums/{condominium_id}/overview")
+    overview = client.get(f"/condominiums/{condominium_id}/overview", headers=manager["headers"])
     assert overview.status_code == 200
     assert overview.json()["units"] == 1
     assert overview.json()["active_memberships"] == 1

@@ -37,7 +37,6 @@ class TicketAssign(BaseModel):
 
 
 class TicketCommentCreate(BaseModel):
-    author_user_id: int | None = None
     body: str = Field(min_length=1)
     visibility: str = "managers"
 
@@ -62,4 +61,3 @@ class Ticket(TicketCreate):
     created_at: datetime
 
     model_config = {"from_attributes": True}
-

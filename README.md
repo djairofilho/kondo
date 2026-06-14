@@ -144,6 +144,7 @@ npm run dev
 - [Arquitetura](docs/architecture.md)
 - [Backend](docs/backend.md)
 - [Roadmap do Backend](docs/backend-roadmap.md)
+- [Checklist de Revisao](docs/review-checklist.md)
 - [API](docs/api.md)
 - [Modelo de Dados](docs/data-model.md)
 - [IA](docs/ai.md)

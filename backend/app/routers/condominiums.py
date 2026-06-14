@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.deps import require_roles
 from app.schemas.condominiums import (
     Condominium,
     CondominiumCreate,
@@ -38,7 +39,7 @@ from app.services.condominium_service import (
 )
 
 
-router = APIRouter(tags=["condominiums"])
+router = APIRouter(tags=["condominiums"], dependencies=[Depends(require_roles("manager", "board_member"))])
 
 
 @router.get("/condominiums", response_model=list[Condominium])
@@ -46,7 +47,7 @@ def get_condominiums(db: Session = Depends(get_db)) -> list[Condominium]:
     return list_condominiums(db)
 
 
-@router.post("/condominiums", response_model=Condominium)
+@router.post("/condominiums", response_model=Condominium, dependencies=[Depends(require_roles("manager"))])
 def post_condominium(payload: CondominiumCreate, db: Session = Depends(get_db)) -> Condominium:
     return create_condominium(db, payload)
 
@@ -56,7 +57,7 @@ def get_condominium_route(condominium_id: int, db: Session = Depends(get_db)) ->
     return get_condominium(db, condominium_id)
 
 
-@router.patch("/condominiums/{condominium_id}", response_model=Condominium)
+@router.patch("/condominiums/{condominium_id}", response_model=Condominium, dependencies=[Depends(require_roles("manager"))])
 def patch_condominium(condominium_id: int, payload: CondominiumUpdate, db: Session = Depends(get_db)) -> Condominium:
     return update_condominium(db, condominium_id, payload)
 
@@ -71,7 +72,7 @@ def get_units(condominium_id: int, db: Session = Depends(get_db)) -> list[Unit]:
     return list_units(db, condominium_id)
 
 
-@router.post("/condominiums/{condominium_id}/units", response_model=Unit)
+@router.post("/condominiums/{condominium_id}/units", response_model=Unit, dependencies=[Depends(require_roles("manager"))])
 def post_unit(condominium_id: int, payload: UnitCreate, db: Session = Depends(get_db)) -> Unit:
     payload.condominium_id = condominium_id
     return create_unit(db, payload)
@@ -82,7 +83,7 @@ def get_unit_route(unit_id: int, db: Session = Depends(get_db)) -> Unit:
     return get_unit(db, unit_id)
 
 
-@router.patch("/units/{unit_id}", response_model=Unit)
+@router.patch("/units/{unit_id}", response_model=Unit, dependencies=[Depends(require_roles("manager"))])
 def patch_unit(unit_id: int, payload: UnitUpdate, db: Session = Depends(get_db)) -> Unit:
     return update_unit(db, unit_id, payload)
 
@@ -97,18 +98,18 @@ def get_memberships(condominium_id: int, db: Session = Depends(get_db)) -> list[
     return list_memberships(db, condominium_id)
 
 
-@router.post("/condominiums/{condominium_id}/memberships", response_model=Membership)
+@router.post("/condominiums/{condominium_id}/memberships", response_model=Membership, dependencies=[Depends(require_roles("manager"))])
 def post_membership(condominium_id: int, payload: MembershipCreate, db: Session = Depends(get_db)) -> Membership:
     payload.condominium_id = condominium_id
     return create_membership(db, payload)
 
 
-@router.patch("/memberships/{membership_id}", response_model=Membership)
+@router.patch("/memberships/{membership_id}", response_model=Membership, dependencies=[Depends(require_roles("manager"))])
 def patch_membership(membership_id: int, payload: MembershipUpdate, db: Session = Depends(get_db)) -> Membership:
     return update_membership(db, membership_id, payload)
 
 
-@router.delete("/memberships/{membership_id}")
+@router.delete("/memberships/{membership_id}", dependencies=[Depends(require_roles("manager"))])
 def remove_membership(membership_id: int, db: Session = Depends(get_db)) -> dict[str, str]:
     delete_membership(db, membership_id)
     return {"status": "deleted"}
@@ -119,13 +120,13 @@ def get_residents(unit_id: int, db: Session = Depends(get_db)) -> list[Resident]
     return list_residents(db, unit_id)
 
 
-@router.post("/units/{unit_id}/residents", response_model=Resident)
+@router.post("/units/{unit_id}/residents", response_model=Resident, dependencies=[Depends(require_roles("manager"))])
 def post_resident(unit_id: int, payload: ResidentCreate, db: Session = Depends(get_db)) -> Resident:
     payload.unit_id = unit_id
     return create_resident(db, payload)
 
 
-@router.patch("/residents/{resident_id}", response_model=Resident)
+@router.patch("/residents/{resident_id}", response_model=Resident, dependencies=[Depends(require_roles("manager"))])
 def patch_resident(resident_id: int, payload: ResidentUpdate, db: Session = Depends(get_db)) -> Resident:
     return update_resident(db, resident_id, payload)
 
