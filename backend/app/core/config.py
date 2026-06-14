@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./kondo.db"
     cors_origins: str = "http://localhost:5173"
     openai_api_key: str | None = None
+    jwt_secret_key: str = "dev-only-change-me"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
