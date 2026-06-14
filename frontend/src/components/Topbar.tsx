@@ -1,4 +1,4 @@
-import { Bell, CircleHelp, Search, User } from "lucide-react"
+import { Bell, Menu, Search, Settings, UserRound } from "lucide-react"
 
 type TopbarProps = {
   condoName: string
@@ -8,29 +8,35 @@ type TopbarProps = {
 export function Topbar({ condoName, title }: TopbarProps) {
   return (
     <header className="topbar">
-      <div className="topbar-left">
-        <p className="eyebrow">Kondo Operacional</p>
-        <h2>{title}</h2>
-        <p>{condoName}</p>
+      <div className="topbar-title">
+        <button className="icon-button mobile-menu-trigger" type="button" aria-label="Abrir menu">
+          <Menu size={20} />
+        </button>
+        <div>
+          <p>{title}</p>
+          <h2>{condoName}</h2>
+        </div>
       </div>
-      <div className="topbar-right">
-        <label className="search">
-          <Search size={16} />
-          <span>Buscar chamado, documento ou unidade</span>
-          <input aria-label="Busca rápida" placeholder="Buscar..." />
-        </label>
-        <button type="button" aria-label="Notificações" title="Notificações">
+
+      <label className="global-search">
+        <Search size={18} />
+        <span className="sr-only">Busca rapida</span>
+        <input placeholder="Buscar chamado, documento ou unidade" />
+      </label>
+
+      <div className="topbar-actions">
+        <button type="button" className="icon-button notification-button" aria-label="Notificacoes">
           <Bell size={18} />
+          <span aria-hidden="true" />
         </button>
-        <button type="button" aria-label="Central de ajuda" title="Central de ajuda">
-          <CircleHelp size={18} />
+        <button type="button" className="icon-button" aria-label="Configuracoes">
+          <Settings size={18} />
         </button>
-        <button type="button" className="user-avatar" aria-label="Perfil" title="Perfil">
-          <User size={16} />
-          <span>João</span>
+        <button type="button" className="user-chip" aria-label="Perfil do usuario">
+          <UserRound size={16} />
+          <span>Joao</span>
         </button>
       </div>
     </header>
   )
 }
-

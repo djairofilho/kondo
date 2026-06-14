@@ -1,8 +1,7 @@
 import type { ReactNode } from "react"
-import { Menu } from "lucide-react"
-import { Topbar } from "./Topbar"
-import { Sidebar } from "./Sidebar"
 import { menuItems } from "../navigation/menu"
+import { Sidebar } from "./Sidebar"
+import { Topbar } from "./Topbar"
 
 export type View =
   | "dashboard"
@@ -31,7 +30,7 @@ export function AppShell({ view, activeTitle, onNavigate, children, condoName }:
         <main className="view-area">{children}</main>
       </div>
 
-      <nav className="mobile-nav" aria-label="Navegação principal">
+      <nav className="mobile-nav" aria-label="Navegacao principal mobile">
         {menuItems.map((item) => {
           const active = view === item.key
           return (
@@ -48,9 +47,6 @@ export function AppShell({ view, activeTitle, onNavigate, children, condoName }:
           )
         })}
       </nav>
-      <button className="help-trigger" type="button" aria-label="Abrir atalhos de navegação">
-        <Menu size={18} />
-      </button>
     </div>
   )
 }
