@@ -48,8 +48,23 @@ def test_financial_crud_and_payment_flow(create_auth_context: Callable[[str, boo
     assert paid_response.json()["status"] == "paid"
 
     assert client.get("/finance/cashflow", headers=manager["headers"]).status_code == 200
-    assert client.get("/finance/monthly-report", headers=manager["headers"]).status_code == 200
+    radar_response = client.get("/finance/expense-radar", headers=manager["headers"])
+    assert radar_response.status_code == 200
+    assert radar_response.json()["categories"]
+    assert "confidence" in radar_response.json()
+
+    report_response = client.get("/finance/monthly-report", headers=manager["headers"])
+    assert report_response.status_code == 200
+    assert report_response.json()["risks"]
+    assert report_response.json()["next_steps"]
+    assert report_response.json()["council_summary"]
+
     assert client.post("/finance/insights-ai", headers=manager["headers"]).status_code == 200
+
+    insights_response = client.post("/finance/expense-insights-ai", headers=manager["headers"])
+    assert insights_response.status_code == 200
+    assert insights_response.json()["recommendations"]
+    assert insights_response.json()["council_summary"]
 
 
 def test_board_member_cannot_write_finance_and_denial_is_audited(create_auth_context: Callable[[str, bool], dict]) -> None:

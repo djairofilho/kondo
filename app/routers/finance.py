@@ -4,9 +4,18 @@ from sqlalchemy.orm import Session
 
 from app.core.database import get_db
 from app.core.deps import require_roles
-from app.schemas.finance import DelinquencyItem, DelinquencyUpdate, FinanceSummary
+from app.schemas.finance import DelinquencyItem, DelinquencyUpdate, ExpenseInsightsResponse, ExpenseRadarResponse, FinanceSummary, MonthlyReportResponse
 from app.schemas.payments import Expense, ExpenseCreate, ExpenseUpdate, Payment, PaymentCreate, PaymentUpdate, Revenue, RevenueCreate, RevenueUpdate
-from app.services.finance_service import get_cashflow, get_delinquencies, get_delinquency_or_404, get_finance_summary, get_monthly_report, update_delinquency
+from app.services.finance_service import (
+    get_cashflow,
+    get_delinquencies,
+    get_delinquency_or_404,
+    get_expense_insights,
+    get_expense_radar,
+    get_finance_summary,
+    get_monthly_report,
+    update_delinquency,
+)
 from app.services.payment_service import (
     create_expense,
     create_payment,
@@ -38,14 +47,24 @@ def finance_cashflow(db: Session = Depends(get_db)) -> dict:
     return get_cashflow(db)
 
 
-@router.get("/finance/monthly-report")
-def finance_monthly_report(db: Session = Depends(get_db)) -> dict:
+@router.get("/finance/expense-radar", response_model=ExpenseRadarResponse)
+def finance_expense_radar(db: Session = Depends(get_db)) -> ExpenseRadarResponse:
+    return get_expense_radar(db)
+
+
+@router.get("/finance/monthly-report", response_model=MonthlyReportResponse)
+def finance_monthly_report(db: Session = Depends(get_db)) -> MonthlyReportResponse:
     return get_monthly_report(db)
 
 
 @router.post("/finance/insights-ai")
 def finance_insights_ai(db: Session = Depends(get_db)) -> dict:
     return {"insights": get_finance_summary(db).insights}
+
+
+@router.post("/finance/expense-insights-ai", response_model=ExpenseInsightsResponse)
+def finance_expense_insights_ai(db: Session = Depends(get_db)) -> ExpenseInsightsResponse:
+    return get_expense_insights(db)
 
 
 @router.get("/delinquencies", response_model=list[DelinquencyItem])
