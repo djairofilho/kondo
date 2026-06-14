@@ -14,6 +14,10 @@ def _get_or_404(db: Session, model, entity_id: int):
     return entity
 
 
+def get_revenue(db: Session, revenue_id: int) -> Revenue:
+    return _get_or_404(db, Revenue, revenue_id)
+
+
 def list_revenues(db: Session) -> list[Revenue]:
     return db.query(Revenue).order_by(Revenue.created_at.desc()).all()
 
@@ -35,6 +39,10 @@ def update_revenue(db: Session, revenue_id: int, payload: RevenueUpdate) -> Reve
     return entity
 
 
+def get_expense(db: Session, expense_id: int) -> Expense:
+    return _get_or_404(db, Expense, expense_id)
+
+
 def list_expenses(db: Session) -> list[Expense]:
     return db.query(Expense).order_by(Expense.created_at.desc()).all()
 
@@ -54,6 +62,10 @@ def update_expense(db: Session, expense_id: int, payload: ExpenseUpdate) -> Expe
     db.commit()
     db.refresh(entity)
     return entity
+
+
+def get_payment(db: Session, payment_id: int) -> Payment:
+    return _get_or_404(db, Payment, payment_id)
 
 
 def list_payments(db: Session) -> list[Payment]:

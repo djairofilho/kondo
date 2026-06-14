@@ -4,7 +4,9 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 
 from app.models import Delinquency, Expense, Revenue
-from app.schemas.finance import DelinquencyItem, FinanceSummary
+from fastapi import HTTPException, status
+
+from app.schemas.finance import DelinquencyItem, DelinquencyUpdate, FinanceSummary
 
 
 def _sum_or_zero(value: Decimal | None) -> Decimal:
@@ -60,4 +62,38 @@ def get_delinquencies(db: Session | None = None) -> list[DelinquencyItem]:
         DelinquencyItem(unit_id=1202, amount_due=Decimal("1032.00"), days_late=41, risk="baixo"),
         DelinquencyItem(unit_id=708, amount_due=Decimal("2580.00"), days_late=95, risk="alto"),
     ]
+
+
+def get_delinquency_or_404(db: Session, delinquency_id: int) -> Delinquency:
+    delinquency = db.get(Delinquency, delinquency_id)
+    if delinquency is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Delinquency not found")
+    return delinquency
+
+
+def update_delinquency(db: Session, delinquency_id: int, payload: DelinquencyUpdate) -> Delinquency:
+    delinquency = get_delinquency_or_404(db, delinquency_id)
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(delinquency, field, value)
+    db.commit()
+    db.refresh(delinquency)
+    return delinquency
+
+
+def get_cashflow(db: Session) -> dict:
+    summary = get_finance_summary(db)
+    return {
+        "expected_revenue": summary.expected_revenue,
+        "received_revenue": summary.received_revenue,
+        "expenses": summary.expenses,
+        "projected_cash": summary.cash_gap,
+    }
+
+
+def get_monthly_report(db: Session) -> dict:
+    summary = get_finance_summary(db)
+    return {
+        "summary": summary.model_dump(),
+        "narrative": "Relatorio mensal gerado a partir das receitas, despesas e inadimplencias persistidas.",
+    }
 

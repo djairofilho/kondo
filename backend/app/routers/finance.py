@@ -3,14 +3,17 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
-from app.schemas.finance import DelinquencyItem, FinanceSummary
+from app.schemas.finance import DelinquencyItem, DelinquencyUpdate, FinanceSummary
 from app.schemas.payments import Expense, ExpenseCreate, ExpenseUpdate, Payment, PaymentCreate, PaymentUpdate, Revenue, RevenueCreate, RevenueUpdate
-from app.services.finance_service import get_delinquencies, get_finance_summary
+from app.services.finance_service import get_cashflow, get_delinquencies, get_delinquency_or_404, get_finance_summary, get_monthly_report, update_delinquency
 from app.services.payment_service import (
     create_expense,
     create_payment,
     create_revenue,
     generate_boleto,
+    get_expense,
+    get_payment,
+    get_revenue,
     list_expenses,
     list_payments,
     list_revenues,
@@ -29,9 +32,34 @@ def finance_summary(db: Session = Depends(get_db)) -> FinanceSummary:
     return get_finance_summary(db)
 
 
+@router.get("/finance/cashflow")
+def finance_cashflow(db: Session = Depends(get_db)) -> dict:
+    return get_cashflow(db)
+
+
+@router.get("/finance/monthly-report")
+def finance_monthly_report(db: Session = Depends(get_db)) -> dict:
+    return get_monthly_report(db)
+
+
+@router.post("/finance/insights-ai")
+def finance_insights_ai(db: Session = Depends(get_db)) -> dict:
+    return {"insights": get_finance_summary(db).insights}
+
+
 @router.get("/delinquencies", response_model=list[DelinquencyItem])
 def delinquency_list(db: Session = Depends(get_db)) -> list[DelinquencyItem]:
     return get_delinquencies(db)
+
+
+@router.get("/delinquencies/{delinquency_id}", response_model=DelinquencyItem)
+def get_delinquency(delinquency_id: int, db: Session = Depends(get_db)) -> DelinquencyItem:
+    return get_delinquency_or_404(db, delinquency_id)
+
+
+@router.patch("/delinquencies/{delinquency_id}", response_model=DelinquencyItem)
+def patch_delinquency(delinquency_id: int, payload: DelinquencyUpdate, db: Session = Depends(get_db)) -> DelinquencyItem:
+    return update_delinquency(db, delinquency_id, payload)
 
 
 @router.get("/revenues", response_model=list[Revenue])
@@ -42,6 +70,11 @@ def get_revenues(db: Session = Depends(get_db)) -> list[Revenue]:
 @router.post("/revenues", response_model=Revenue)
 def post_revenue(payload: RevenueCreate, db: Session = Depends(get_db)) -> Revenue:
     return create_revenue(db, payload)
+
+
+@router.get("/revenues/{revenue_id}", response_model=Revenue)
+def get_revenue_route(revenue_id: int, db: Session = Depends(get_db)) -> Revenue:
+    return get_revenue(db, revenue_id)
 
 
 @router.patch("/revenues/{revenue_id}", response_model=Revenue)
@@ -59,6 +92,11 @@ def post_expense(payload: ExpenseCreate, db: Session = Depends(get_db)) -> Expen
     return create_expense(db, payload)
 
 
+@router.get("/expenses/{expense_id}", response_model=Expense)
+def get_expense_route(expense_id: int, db: Session = Depends(get_db)) -> Expense:
+    return get_expense(db, expense_id)
+
+
 @router.patch("/expenses/{expense_id}", response_model=Expense)
 def patch_expense(expense_id: int, payload: ExpenseUpdate, db: Session = Depends(get_db)) -> Expense:
     return update_expense(db, expense_id, payload)
@@ -72,6 +110,11 @@ def get_payments(db: Session = Depends(get_db)) -> list[Payment]:
 @router.post("/payments", response_model=Payment)
 def post_payment(payload: PaymentCreate, db: Session = Depends(get_db)) -> Payment:
     return create_payment(db, payload)
+
+
+@router.get("/payments/{payment_id}", response_model=Payment)
+def get_payment_route(payment_id: int, db: Session = Depends(get_db)) -> Payment:
+    return get_payment(db, payment_id)
 
 
 @router.patch("/payments/{payment_id}", response_model=Payment)

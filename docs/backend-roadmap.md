@@ -53,16 +53,8 @@ Status: implementado parcialmente.
 - Expandir acordos para listagem, criacao, pagamento e cancelamento.
 - Manter simulacao de acordo como endpoint de apoio.
 
-Ainda falta:
-
-- `GET /finance/cashflow`
-- `GET /finance/monthly-report`
-- `POST /finance/insights-ai`
-- `GET /revenues/{revenue_id}`
-- `GET /expenses/{expense_id}`
-- `GET /payments/{payment_id}`
-- `GET /delinquencies/{delinquency_id}`
-- `PATCH /delinquencies/{delinquency_id}`
+Lacunas principais fechadas: cashflow, relatorio mensal, insights, detalhes de
+receitas/despesas/pagamentos e atualizacao de inadimplencia.
 
 ### 5. Anexos e storage local
 
