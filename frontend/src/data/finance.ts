@@ -17,6 +17,7 @@ export type FinanceTransaction = {
   amount: number
   issued_at: string
   unit: string | null
+  category: string
 }
 
 export const finances = {
@@ -26,55 +27,60 @@ export const finances = {
     expenses: 19800,
     cash_gap: -2160,
     insights: [
-      "A inadimplencia atual pode pressionar o caixa ate o dia 15. Recomendamos antecipar a cobranca amigavel das unidades pendentes.",
-      "Conta de agua subiu 18% em relacao a media dos ultimos 3 meses.",
+      "A inadimplência atual pode pressionar o caixa até o dia 15. Recomendamos antecipar a cobrança amigável das unidades pendentes.",
+      "Conta de água subiu 18% em relação aos últimos 3 meses. Validação com prestador já foi aberta.",
     ],
   } satisfies FinanceSummary,
   transactions: [
     {
       id: "REV-001",
-      description: "Condominio junho/2026",
+      description: "Condomínio junho/2026",
       type: "receita",
-      amount: 6200,
       status: "pago",
+      amount: 6200,
       issued_at: "2026-06-01",
       unit: null,
+      category: "Condomínio",
     },
     {
       id: "REV-002",
       description: "Taxa extra reforma",
       type: "receita",
-      amount: 1020,
       status: "pendente",
+      amount: 1020,
       issued_at: "2026-06-05",
       unit: "Apto 401",
+      category: "Receita Extra",
     },
     {
       id: "DES-001",
-      description: "Servico de agua",
+      description: "Serviço de água",
       type: "despesa",
-      amount: 5400,
       status: "pago",
+      amount: 5400,
       issued_at: "2026-06-06",
       unit: null,
+      category: "Infraestrutura",
     },
     {
       id: "DES-002",
       description: "Limpeza de portaria",
       type: "despesa",
-      amount: 4200,
       status: "pendente",
+      amount: 4200,
       issued_at: "2026-06-07",
       unit: null,
+      category: "Serviços",
     },
     {
       id: "DES-003",
-      description: "Seguranca noturna",
+      description: "Segurança noturna",
       type: "despesa",
-      amount: 5000,
       status: "pago",
+      amount: 5000,
       issued_at: "2026-06-03",
       unit: null,
+      category: "Segurança",
     },
   ] satisfies FinanceTransaction[],
 }

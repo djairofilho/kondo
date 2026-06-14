@@ -12,13 +12,13 @@ import { getDashboard } from "./services/mockApi"
 
 const titles: Record<View, string> = {
   dashboard: "Dashboard operacional",
-  kanban: "Kanban",
-  tickets: "Chamados",
+  kanban: "Kanban operacional",
+  tickets: "Chamados inteligentes",
   finance: "Financeiro e pagamentos",
   agreements: "Inadimplência e acordos",
-  portal: "Portal do morador",
-  documents: "Documentos IA",
+  documents: "Documentos e regras",
   announcements: "Comunicados",
+  portal: "Portal do morador",
 }
 
 export default function App() {
@@ -28,8 +28,9 @@ export default function App() {
   useEffect(() => {
     let active = true
     getDashboard().then((payload) => {
-      if (!active) return
-      setCondoName(payload.condo_name)
+      if (active) {
+        setCondoName(payload.condo_name)
+      }
     })
     return () => {
       active = false
@@ -43,9 +44,9 @@ export default function App() {
       {view === "tickets" && <Tickets />}
       {view === "finance" && <Finance />}
       {view === "agreements" && <Agreements />}
-      {view === "portal" && <ResidentPortal />}
       {view === "documents" && <Documents />}
       {view === "announcements" && <Announcements />}
+      {view === "portal" && <ResidentPortal />}
     </AppShell>
   )
 }

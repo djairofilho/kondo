@@ -1,21 +1,27 @@
-import { BotMessageSquare, ChevronRight, Filter } from "lucide-react"
+import { BotMessageSquare, ChevronRight, Filter, Timer, UserRound } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
+
 import { Badge } from "../components/Badge"
 import { Card } from "../components/Card"
 import { SectionHeader } from "../components/SectionHeader"
 import { classifyTicket, listTickets } from "../services/mockApi"
-import { ticketStatusLabels, type Ticket, type TicketPriority, type TicketStatus, ticketStatusOptions } from "../data/tickets"
+import {
+  ticketRiskTone,
+  ticketStatusLabels,
+  ticketStatusOptions,
+  type Ticket,
+  type TicketPriority,
+  type TicketStatus,
+} from "../data/tickets"
 
 const priorityTone: Record<TicketPriority, "critical" | "high" | "medium"> = {
   baixa: "medium",
-  media: "high",
+  média: "high",
   alta: "critical",
 }
 
 function riskTone(value: string): "critical" | "high" | "medium" {
-  if (value === "alto") return "critical"
-  if (value === "medio") return "high"
-  return "medium"
+  return ticketRiskTone[value] ?? "medium"
 }
 
 export function Tickets() {
@@ -27,11 +33,11 @@ export function Tickets() {
 
   useEffect(() => {
     let active = true
-    void (async () => {
+    ;(async () => {
       const payload = await listTickets()
       if (!active) return
       setTickets(payload)
-      if (payload[0]) setSelectedId(payload[0].id)
+      setSelectedId(payload[0]?.id ?? null)
       setLoading(false)
     })()
     return () => {
@@ -39,10 +45,10 @@ export function Tickets() {
     }
   }, [])
 
-  const selected = useMemo(() => {
-    if (selectedId === null) return null
-    return tickets.find((ticket) => ticket.id === selectedId) ?? null
-  }, [selectedId, tickets])
+  const selected = useMemo(
+    () => (selectedId === null ? null : tickets.find((ticket) => ticket.id === selectedId) ?? null),
+    [selectedId, tickets],
+  )
 
   const dataset = useMemo(() => {
     if (statusFilter === "all") return tickets
@@ -53,8 +59,9 @@ export function Tickets() {
     <div className="view-stack">
       <SectionHeader
         title="Chamados"
-        description="Fila operacional e detalhe rápido para o chamado selecionado."
+        description="Visão completa da fila de operação e detalhamento do chamado."
       />
+
       <div className="toolbar-inline">
         <div className="toolbar-group">
           <Filter size={16} />
@@ -75,13 +82,11 @@ export function Tickets() {
             ))}
           </select>
         </div>
-        <div className="toolbar-group">
-          <span className="muted">{loading ? "Carregando..." : `${dataset.length} itens`}</span>
-        </div>
+        <span className="muted">{loading ? "Carregando..." : `${dataset.length} chamado(s)`}</span>
       </div>
 
       <div className="tickets-layout">
-        <Card title="Chamados" subtitle="Lista densa com microestado">
+        <Card title="Chamados" subtitle="Lista densa com status e prioridade">
           <div className="tickets-head">
             <span>Unidade</span>
             <span>Título</span>
@@ -89,29 +94,36 @@ export function Tickets() {
             <span>Status</span>
           </div>
           <div className="tickets-body">
-            {dataset.map((ticket) => (
-              <button
-                key={ticket.id}
-                type="button"
-                className={`row-button ${selectedId === ticket.id ? "active" : ""}`}
-                onClick={() => {
-                  setSelectedId(ticket.id)
-                }}
-              >
-                <span>{ticket.unit}</span>
-                <span>
-                  <strong>{ticket.title}</strong>
-                  <div className="muted small">{ticket.location}</div>
-                </span>
-                <span>
-                  <Badge tone={priorityTone[ticket.priority]}>{ticket.priority}</Badge>
-                </span>
-                <span className="status-value">
-                  {ticketStatusLabels[ticket.status] || ticket.status}
-                  <ChevronRight size={16} />
-                </span>
-              </button>
-            ))}
+            {loading ? (
+              <p className="muted">Sincronizando chamados...</p>
+            ) : dataset.length === 0 ? (
+              <p className="muted">Sem chamados para este filtro.</p>
+            ) : (
+              dataset.map((ticket) => (
+                <button
+                  key={ticket.id}
+                  type="button"
+                  className={`row-button ${selectedId === ticket.id ? "active" : ""}`}
+                  onClick={() => {
+                    setSelectedId(ticket.id)
+                    setClassified(null)
+                  }}
+                >
+                  <span>{ticket.unit}</span>
+                  <span>
+                    <strong>{ticket.title}</strong>
+                    <div className="muted small">{ticket.location}</div>
+                  </span>
+                  <span>
+                    <Badge tone={priorityTone[ticket.priority]}>{ticket.priority}</Badge>
+                  </span>
+                  <span className="status-value">
+                    {ticketStatusLabels[ticket.status] || ticket.status}
+                    <ChevronRight size={16} />
+                  </span>
+                </button>
+              ))
+            )}
           </div>
         </Card>
 
@@ -122,6 +134,7 @@ export function Tickets() {
             <>
               <h3>{selected.title}</h3>
               <p>{selected.description}</p>
+
               <div className="ticket-meta-grid">
                 <p>
                   <strong>Unidade:</strong> {selected.unit}
@@ -141,20 +154,35 @@ export function Tickets() {
                 <p>
                   <strong>Origem:</strong> {selected.source}
                 </p>
+                <p>
+                  <strong>Responsável:</strong> {selected.owner}
+                </p>
+                <p>
+                  <strong>Assistente:</strong> {selected.assignee ?? "A definir"}
+                </p>
               </div>
+
               <p>
                 <strong>Próxima ação:</strong> {selected.next_action}
               </p>
-              <p>
-                <strong>Responsável atual:</strong> {selected.owner}
-              </p>
+
               <div className="ticket-meta">
                 <Badge tone={priorityTone[selected.priority]}>{`Prioridade ${selected.priority}`}</Badge>
                 <Badge tone={riskTone(selected.risk)}>{selected.risk}</Badge>
+                <div className="status-row small">
+                  <UserRound size={14} />
+                  <Badge tone="in_progress">{selected.owner}</Badge>
+                </div>
+                <div className="status-row small">
+                  <Timer size={14} />
+                  <Badge tone="resolved">{`Confiança IA ${selected.confidence}%`}</Badge>
+                </div>
               </div>
+
               <div className="ia-card">
                 <h4>
-                  <BotMessageSquare size={16} /> Classificação IA
+                  <BotMessageSquare size={16} />
+                  Classificação IA
                 </h4>
                 <p>
                   Categoria: {selected.ai_analysis.category} • Ação sugerida: {selected.ai_analysis.next_action}
@@ -171,7 +199,6 @@ export function Tickets() {
                 </button>
                 {classified ? <pre className="json">{classified}</pre> : null}
               </div>
-              <p className="small muted">Confiança IA: {selected.confidence}%</p>
             </>
           )}
         </Card>
@@ -179,4 +206,3 @@ export function Tickets() {
     </div>
   )
 }
-

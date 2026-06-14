@@ -2,11 +2,11 @@ import { Megaphone, PenLine, Send } from "lucide-react"
 import { useEffect, useState } from "react"
 import { Card } from "../components/Card"
 import { SectionHeader } from "../components/SectionHeader"
-import { generateAnnouncement, listAnnouncements, postAnnouncement } from "../services/mockApi"
+import { generateAnnouncement, listAnnouncements, postAnnouncement, publishAnnouncement } from "../services/mockApi"
 import type { Announcement } from "../data/announcements"
 
 export function Announcements() {
-  const [draft, setDraft] = useState("Informamos que a garagem B2 estara parcialmente isolada para reparo emergencial")
+  const [draft, setDraft] = useState("Informamos que a garagem B2 ficará parcialmente isolada para reparo emergencial.")
   const [tone, setTone] = useState<"formal" | "informal" | "urgente">("formal")
   const [loading, setLoading] = useState(true)
   const [generated, setGenerated] = useState<{ title: string; body: string; status: string } | null>(null)
@@ -27,7 +27,11 @@ export function Announcements() {
 
   async function runGenerator() {
     const result = await generateAnnouncement({ draft, tone })
-    setGenerated(result)
+    setGenerated({
+      title: result.title,
+      body: result.body,
+      status: result.status,
+    })
   }
 
   async function save() {
@@ -44,11 +48,16 @@ export function Announcements() {
     setSaving(false)
   }
 
+  async function publish(itemId: number) {
+    const updated = await publishAnnouncement(itemId)
+    setAnnouncements((previous) => previous.map((entry) => (entry.id === itemId ? updated : entry)))
+  }
+
   return (
     <div className="view-stack">
-      <SectionHeader title="Comunicados" description="Escreva, gere com IA e publique com transparência." />
+      <SectionHeader title="Comunicados" description="Rascunho, geração por IA e publicação no painel interno." />
 
-      <Card title="Rascunho operacional" subtitle="Prompt do comunicado">
+      <Card title="Rascunho operacional" subtitle="Construa e gere com IA">
         <label htmlFor="tone">Tom:</label>
         <select id="tone" value={tone} onChange={(event) => setTone(event.target.value as "formal" | "informal" | "urgente")}>
           <option value="formal">Formal</option>
@@ -75,13 +84,13 @@ export function Announcements() {
             <p>{generated.body}</p>
             <button className="btn btn-outline" type="button" onClick={save} disabled={saving}>
               <Send size={16} />
-              {saving ? "Salvando..." : "Publicar comunicado"}
+              {saving ? "Publicando..." : "Publicar comunicado"}
             </button>
           </div>
         ) : null}
       </Card>
 
-      <Card title="Comunicados publicados" subtitle="Historico recente">
+      <Card title="Comunicados publicados" subtitle="Histórico recente">
         {loading ? (
           <p className="muted">Carregando...</p>
         ) : (
@@ -92,6 +101,11 @@ export function Announcements() {
               <div className="muted">
                 {item.audience} • {item.status} • {item.created_at}
               </div>
+              {item.status !== "publicado" ? (
+                <button className="btn btn-outline" type="button" onClick={() => publish(item.id)}>
+                  Publicar agora
+                </button>
+              ) : null}
             </article>
           ))
         )}
@@ -99,3 +113,4 @@ export function Announcements() {
     </div>
   )
 }
+

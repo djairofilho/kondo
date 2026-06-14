@@ -1,5 +1,5 @@
-import { Calculator, CheckCircle2, CircleAlert } from "lucide-react"
-import { useEffect, useState } from "react"
+import { Calculator, CheckCircle2, CircleAlert, FileChartColumn } from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
 import { Card } from "../components/Card"
 import { SectionHeader } from "../components/SectionHeader"
 import { listAgreements, listDelinquencies, simulateAgreement } from "../services/mockApi"
@@ -9,7 +9,7 @@ import type { Delinquency } from "../data/delinquencies"
 const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" })
 
 export function Agreements() {
-  const [list, setList] = useState<Agreement[]>([])
+  const [agreements, setAgreements] = useState<Agreement[]>([])
   const [delinquencies, setDelinquencies] = useState<Delinquency[]>([])
   const [selectedUnit, setSelectedUnit] = useState<string>("")
   const [entryAmount, setEntryAmount] = useState<number>(400)
@@ -18,22 +18,25 @@ export function Agreements() {
 
   useEffect(() => {
     let active = true
-    listAgreements().then((payload) => {
-      if (active) {
-        setList(payload)
-        setSelectedUnit(payload[0]?.unit || "")
-      }
-    })
-    listDelinquencies().then((payload) => {
-      if (active) setDelinquencies(payload)
+    Promise.all([listAgreements(), listDelinquencies()]).then(([agPayload, dPayload]) => {
+      if (!active) return
+      setAgreements(agPayload)
+      setDelinquencies(dPayload)
+      setSelectedUnit(dPayload[0]?.unit ?? "")
     })
     return () => {
       active = false
     }
   }, [])
 
-  const current = delinquencies.find((item) => item.unit === selectedUnit)
-  const agreement = list.find((item) => item.unit === selectedUnit)
+  const current = useMemo(
+    () => delinquencies.find((item) => item.unit === selectedUnit) ?? null,
+    [delinquencies, selectedUnit],
+  )
+  const agreement = useMemo(
+    () => agreements.find((item) => item.unit === selectedUnit) ?? null,
+    [agreements, selectedUnit],
+  )
 
   async function runSimulation() {
     if (!current) return
@@ -50,33 +53,41 @@ export function Agreements() {
     <div className="view-stack">
       <SectionHeader
         title="Inadimplência e acordos"
-        description="Lista de unidades em atraso e simulação de acordo por unidade."
+        description="Selecione unidades inadimplentes e simule cenários de entrada e parcelas."
       />
 
       <div className="grid-2">
-        <Card title="Unidades inadimplentes" subtitle="Painel de recuperação financeira">
-          {delinquencies.map((row) => (
-            <button
-              key={row.id}
-              type="button"
-              className={`row-button ${selectedUnit === row.unit ? "active" : ""}`}
-              onClick={() => setSelectedUnit(row.unit)}
-            >
-              <span>
-                <strong>Unidade {row.unit}</strong>
-                <span className="muted small"> {row.days_late} dias em atraso</span>
-              </span>
-              <span>{money.format(row.amount_due)}</span>
-              <span>{row.risk}</span>
-            </button>
-          ))}
+        <Card title="Unidades inadimplentes" subtitle="Painel de recuperação">
+          {delinquencies.length === 0 ? (
+            <p className="muted">Sem unidades inadimplentes no momento.</p>
+          ) : (
+            delinquencies.map((row) => (
+              <button
+                key={row.id}
+                type="button"
+                className={`row-button ${selectedUnit === row.unit ? "active" : ""}`}
+                onClick={() => {
+                  setSelectedUnit(row.unit)
+                  setSimulation(null)
+                }}
+              >
+                <span>
+                  <strong>Unidade {row.unit}</strong>
+                  <span className="small muted"> {row.days_late} dias em atraso</span>
+                </span>
+                <span>{money.format(row.amount_due)}</span>
+                <span>{row.risk}</span>
+                <span>{row.status}</span>
+              </button>
+            ))
+          )}
         </Card>
 
-        <Card title="Simulação de acordo" subtitle="Ajuste entrada e parcelas e veja impacto no caixa">
+        <Card title="Simulador de acordo" subtitle="Ajuste entrada e parcelas para impacto no fluxo">
           <p>
             <strong>Unidade selecionada:</strong> {selectedUnit || "não selecionada"}
           </p>
-          <p>Situação atual: {agreement ? `${money.format(agreement.amount_due)} em aberto` : "Sem acordo vinculado ainda"}</p>
+          <p>{current ? `Saldo devedor: ${money.format(current.amount_due)}` : "Sem acordo vinculado ainda."}</p>
           <label htmlFor="entry">Entrada (R$)</label>
           <input
             id="entry"
@@ -96,21 +107,29 @@ export function Agreements() {
           />
           <button type="button" className="btn btn-primary" onClick={runSimulation}>
             <Calculator size={16} />
-            Simular impacto no fluxo
+            Simular impacto
           </button>
+
+          <div className="simulation-result">
+            <div className="status-row">
+              <FileChartColumn size={16} />
+              <span>Situação atual: {agreement?.recommendation ?? "Sem acordo definido."}</span>
+            </div>
+          </div>
+
           {simulation ? (
-            <div className="simulation-result">
+            <>
               <div className="status-row">
                 <CheckCircle2 size={16} />
                 <span>Entrada: {money.format(simulation.entry_amount || 0)}</span>
               </div>
               <div className="status-row">
                 <CircleAlert size={16} />
-                <span>Parcela: {money.format(simulation.monthly_installment)}/mês</span>
+                <span>Parcela: {money.format(simulation.monthly_installment)} / mês</span>
               </div>
               <p>Impacto no caixa: {money.format(simulation.projected_cash_impact)}</p>
               <p className="muted">{simulation.recommendation}</p>
-            </div>
+            </>
           ) : (
             <p className="muted">Ainda sem simulação. Clique em simular.</p>
           )}

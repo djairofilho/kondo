@@ -1,6 +1,6 @@
 export const condo = {
   id: 1,
-  name: "Condominio Jardim Aurora",
+  name: "Condomínio Jardim Aurora",
   units: 40,
 }
 
@@ -18,11 +18,13 @@ export type DashboardSummary = {
   expenses: number
   paid_percentage: number
   ai_priorities: Array<{
+    id: string
     title: string
     description: string
     urgency: "baixo" | "medio" | "alto"
   }>
   critical_status_block: {
+    id: string
     title: string
     description: string
     risk: "baixo" | "medio" | "alto"
@@ -46,30 +48,34 @@ export const dashboardSummary: DashboardSummary = {
   paid_percentage: 0.856,
   ai_priorities: [
     {
-      title: "Risco de deficit no proximo mes",
-      description: "Projecao indica deficit de R$ 2.160 se tres acordos nao forem fechados nesta semana.",
+      id: "priority-1",
+      title: "Risco de déficit no próximo mês",
+      description: "A projeção indica déficit de R$ 2.160 se três acordos não forem fechados nesta semana.",
       urgency: "alto",
     },
     {
+      id: "priority-2",
       title: "Vazamento de garagem com risco de impacto",
       description:
-        "Ticket com risco eletronico e prioridade alta. Fornecedor ja foi acionado e precisa retorno em ate 90 minutos.",
+        "Chamado com risco elétrico e prioridade alta. O fornecedor já foi acionado e precisa retorno em até 90 minutos.",
       urgency: "alto",
     },
     {
-      title: "Gasto acima da media no trimestre",
+      id: "priority-3",
+      title: "Gasto acima da média no trimestre",
       description:
-        "Conta de seguranca e manutencao saiu 18% acima da media e deve ser revisado no comite financeiro.",
+        "Conta de segurança e manutenção saiu 18% acima da média e deve ser revisada no comitê financeiro.",
       urgency: "medio",
     },
   ],
   critical_status_block: {
-    title: "Vazamento proximo ao quadro de garagem",
+    id: "critical-1",
+    title: "Vazamento próximo ao quadro de garagem",
     description:
-      "Perda de agua reportada em area com acesso a circuito do quadro. Requeria isolamento para evitar risco de choque.",
+      "Perda de água reportada em área com acesso ao circuito do quadro elétrico. É necessário isolamento imediato para evitar risco de choque.",
     risk: "alto",
-    owner: "Zelador e fornecedor hidraulico",
-    next_action: "Isolar area e concluir inspeccao em campo em 2 horas.",
+    owner: "Zelador e fornecedor hidráulico",
+    next_action: "Isolar área e concluir inspeção em até 2 horas.",
   },
 }
 

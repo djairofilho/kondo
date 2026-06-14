@@ -1,11 +1,11 @@
-import { AlertTriangle, ArrowUpRight, CheckCircle2, Clock3, FileWarning, Wallet2 } from "lucide-react"
+import { AlertTriangle, ArrowUpRight, CheckCircle2, Clock3, FileWarning, Wallet2, XCircle } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
-import { getDashboard, listTickets } from "../services/mockApi"
 import { Badge } from "../components/Badge"
 import { Card } from "../components/Card"
 import { MetricCard } from "../components/MetricCard"
 import { SectionHeader } from "../components/SectionHeader"
-import type { Ticket } from "../data/tickets"
+import { getDashboard, listTickets } from "../services/mockApi"
+import { type Ticket } from "../data/tickets"
 
 const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" })
 
@@ -13,7 +13,7 @@ function toPercent(value: number) {
   return `${(value * 100).toFixed(1)}%`
 }
 
-function toBadgeRisk(value?: "baixo" | "medio" | "alto") {
+function mapRiskTone(value?: "baixo" | "medio" | "alto") {
   if (!value) return "medium" as const
   if (value === "alto") return "critical" as const
   if (value === "medio") return "high" as const
@@ -26,141 +26,115 @@ export function Dashboard() {
 
   useEffect(() => {
     let active = true
-    getDashboard().then((payload) => {
-      if (active) setSummary(payload)
+
+    Promise.all([getDashboard(), listTickets()]).then(([dashboardPayload, ticketsPayload]) => {
+      if (!active) return
+      setSummary(dashboardPayload)
+      setTickets(ticketsPayload)
     })
-    listTickets().then((data) => {
-      if (active) setTickets(data)
-    })
+
     return () => {
       active = false
     }
   }, [])
 
-  const criticalItems = useMemo(() => {
-    if (!tickets.length) return []
-    return tickets
-      .filter((ticket) => ticket.risk === "alto" || ticket.priority === "alta")
-      .slice(0, 4)
-      .map((ticket) => ({
-        id: ticket.id,
-        title: ticket.title,
-        description: ticket.next_action,
-        urgency: ticket.risk === "alto" ? "critical" : "high",
-      }))
+  const criticalTickets = useMemo(() => {
+    return tickets.filter((ticket) => ticket.risk === "alto" || ticket.priority === "alta").slice(0, 4)
   }, [tickets])
 
   return (
     <div className="view-stack">
       <SectionHeader
         title="Dashboard operacional"
-        description="Visão executiva para decisões de curto e médio prazo."
+        description="Visão executiva do condomínio para decisões em minutos."
       />
+
       <div className="dashboard-grid">
-        <MetricCard label="Saldo atual" value={summary ? money.format(summary.cash_balance) : "..."}>
-          <Wallet2 size={16} />
-        </MetricCard>
+        <MetricCard label="Saldo atual" value={summary ? money.format(summary.cash_balance) : "..."}><Wallet2 size={16} /></MetricCard>
         <MetricCard label="Caixa projetado" value={summary ? money.format(summary.projected_cash) : "..."} />
-        <MetricCard
-          label="Inadimplência"
-          value={summary ? toPercent(summary.delinquency_rate) : "..."}
-          note={summary ? `${summary.units} unidades ativas` : undefined}
-        />
-        <MetricCard
-          label="Atraso no fluxo"
-          value={summary ? money.format(summary.expected_revenue - summary.received_revenue) : "..."}
-          note="Projecao de receitas pendentes"
-        />
-        <MetricCard
-          label="Chamados abertos"
-          value={summary ? `${summary.open_tickets}` : "..."}
-          note={`${summary?.critical_tickets ?? 0} criticos`}
-        />
-        <MetricCard
-          label="Taxa de atendimento pago"
-          value={summary ? `${Math.round(summary.paid_percentage * 100)}%` : "..."}
-          note="Pagamentos conciliados no mes atual"
-        />
+        <MetricCard label="Inadimplência" value={summary ? toPercent(summary.delinquency_rate) : "..."} note={summary ? `${summary.units} unidades ativas` : undefined} />
+        <MetricCard label="Recebíveis pendentes" value={summary ? money.format(summary.expected_revenue - summary.received_revenue) : "..."} note="Projeção de entradas em atraso" />
+        <MetricCard label="Chamados abertos" value={summary ? `${summary.open_tickets}` : "..."} note={`${summary?.critical_tickets ?? 0} críticos`} />
+        <MetricCard label="Atendimento pago" value={summary ? `${Math.round(summary.paid_percentage * 100)}%` : "..."} note="Pagamentos conciliados no mês atual" />
       </div>
 
       <div className="grid-2">
         <Card title="Fila de prioridades da IA" subtitle="Top prioridades para resolver hoje">
-          <ul className="list-stack">
+          <div className="priority-list">
             {!summary ? (
-              <li className="muted">Carregando prioridades</li>
+              <p className="muted">Carregando prioridades...</p>
             ) : (
               summary.ai_priorities.map((item) => (
-                <li key={item.title} className="k-list-row">
-                  <div className="list-content">
+                <div key={item.id} className="k-list-row">
+                  <div>
                     <strong>{item.title}</strong>
                     <p>{item.description}</p>
                   </div>
-                  <Badge
-                    tone={
-                      item.urgency === "alto"
-                        ? "critical"
-                        : item.urgency === "medio"
-                          ? "high"
-                          : "medium"
-                    }
-                  >
+                  <Badge tone={item.urgency === "alto" ? "critical" : item.urgency === "medio" ? "high" : "medium"}>
                     {item.urgency}
                   </Badge>
-                </li>
+                </div>
               ))
             )}
-          </ul>
+          </div>
         </Card>
 
-        <Card title="Status critico" subtitle="Bloco de risco operacional">
+        <Card title="Status crítico" subtitle="Painel de risco operacional">
           <div className="critical-stack">
             <div className="critical-title">
               <FileWarning size={16} />
-              <span>{summary?.critical_status_block.title ?? "Sem bloco critico"}</span>
+              <span>{summary?.critical_status_block.title ?? "Sem bloqueio crítico"}</span>
             </div>
             <p>{summary?.critical_status_block.description}</p>
             <div className="status-row">
-                <Badge tone={toBadgeRisk(summary?.critical_status_block.risk)}>
-                {summary?.critical_status_block?.risk ?? "baixo"}
-              </Badge>
+              <Badge tone={mapRiskTone(summary?.critical_status_block.risk)}>{summary?.critical_status_block.risk ?? "baixo"}</Badge>
               <span className="muted">Responsável: {summary?.critical_status_block.owner}</span>
             </div>
             <p className="muted">Próxima ação: {summary?.critical_status_block.next_action}</p>
-            {criticalItems.length > 0 ? (
-              <div className="ticket-compact">
-                <h4>Chamados em foco</h4>
-                {criticalItems.map((item) => (
-                  <div key={item.id} className="status-row">
-                    <Badge tone={item.urgency === "critical" ? "critical" : "high"}>{item.urgency}</Badge>
+            <div className="ticket-compact">
+              <strong>Chamados em foco</strong>
+              {criticalTickets.length > 0 ? (
+                criticalTickets.map((item) => (
+                  <div className="status-row" key={item.id}>
+                    <Badge tone={item.priority === "alta" ? "critical" : item.priority === "média" ? "high" : "medium"}>
+                      {item.priority}
+                    </Badge>
                     <span>{item.title}</span>
                   </div>
-                ))}
-              </div>
-            ) : null}
+                ))
+              ) : (
+                <p className="muted">Sem chamado com risco elevado no momento.</p>
+              )}
+            </div>
           </div>
         </Card>
       </div>
 
-      <Card title="Ações rápidas da operação" className="quick-actions">
+      <Card title="Ações rápidas" subtitle="Atalhos para o ciclo operacional">
         <div className="action-row">
           <button type="button" className="btn btn-outline">
             <Clock3 size={16} />
-            Abrir Kanban
-          </button>
-          <button type="button" className="btn btn-outline">
-            <CheckCircle2 size={16} />
-            Ver financeiro
+            Abrir fila de chamados
           </button>
           <button type="button" className="btn btn-outline">
             <ArrowUpRight size={16} />
-            Ajustar acordos
+            Ir para Kanban
+          </button>
+          <button type="button" className="btn btn-outline">
+            <CheckCircle2 size={16} />
+            Revisar financeiro
           </button>
           <button type="button" className="btn btn-outline">
             <AlertTriangle size={16} />
-            Novo comunicado
+            Priorizar acordo
+          </button>
+          <button type="button" className="btn btn-outline">
+            <XCircle size={16} />
+            Resolver bloqueios
           </button>
         </div>
       </Card>
     </div>
   )
 }
+
