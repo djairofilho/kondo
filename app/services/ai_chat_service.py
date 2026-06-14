@@ -388,10 +388,28 @@ def _context_for_user(db: Session, current_user: User, profile: str) -> dict:
 
     documents_count = 0
     announcements_count = 0
+    resident_rules_preview: list[str] = []
     if condominium_id is not None:
         documents_count = (
             db.query(Document).filter(Document.condominium_id == condominium_id).count()
         )
+        if profile == "morador":
+            resident_rule_docs = (
+                db.query(Document)
+                .filter(
+                    Document.condominium_id == condominium_id,
+                    Document.document_type == "rules",
+                    Document.visibility.in_(["residents", "public"]),
+                )
+                .order_by(Document.created_at.desc())
+                .limit(3)
+                .all()
+            )
+            resident_rules_preview = [
+                f"{doc.title}: {(doc.summary or doc.content or '').strip()[:450]}"
+                for doc in resident_rule_docs
+                if (doc.summary or doc.content or "").strip()
+            ]
         announcements_count = (
             db.query(Announcement)
             .filter(
@@ -407,6 +425,7 @@ def _context_for_user(db: Session, current_user: User, profile: str) -> dict:
         "critical_tickets": [t.title for t in critical_tickets[:4]],
         "documents_count": documents_count,
         "announcements_count": announcements_count,
+        "resident_rules_preview": resident_rules_preview,
     }
 
     if profile == "morador" and unit_id is not None:
@@ -1053,6 +1072,20 @@ def _mock_answer(payload: AIChatRequest, context: dict) -> str:
     finance = context.get("finance", {})
 
     if profile == "morador":
+        if any(
+            t in text
+            for t in ["regra", "regimento", "convencao", "obra", "piscina", "pet", "salao", "garagem"]
+        ):
+            rules_preview = context.get("resident_rules_preview") or []
+            if rules_preview:
+                return (
+                    "Encontrei estas regras disponiveis para moradores:\n\n"
+                    + "\n\n".join(f"- {item}" for item in rules_preview[:3])
+                )
+            return (
+                "Nao encontrei regras publicadas para moradores neste condominio. "
+                "Confira a area de documentos ou fale com a administracao."
+            )
         if any(t in text for t in ["financ", "despesa", "caixa", "inadimpl", "acordo", "boleto"]):
             return (
                 "Dados financeiros do condomínio são restritos à gestão. "

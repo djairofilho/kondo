@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 
 from app.models import Announcement, AuditEvent, Document, Expense, Ticket, Unit, WorkItem
+from app.services.document_rag_service import retrieve_document_context
 from app.services.finance_service import get_finance_summary
 
 
@@ -100,3 +101,36 @@ def board_audit_events(db: Session) -> dict:
 def resident_rules(db: Session) -> dict:
     docs = db.query(Document).filter(Document.visibility.in_(["residents", "public"])).all()
     return {"documents": [{"id": doc.id, "title": doc.title, "type": doc.document_type} for doc in docs]}
+
+
+def answer_resident_rules(db: Session, question: str, condominium_id: int | None = None) -> dict:
+    docs_query = db.query(Document).filter(
+        Document.visibility.in_(["residents", "public"]),
+        Document.document_type == "rules",
+    )
+    if condominium_id is not None:
+        docs_query = docs_query.filter(Document.condominium_id == condominium_id)
+
+    snippets: list[str] = []
+    for document in docs_query.order_by(Document.created_at.desc()).all():
+        for chunk in retrieve_document_context(document, question, limit=2):
+            snippets.append(f"{document.title}: {chunk}")
+            if len(snippets) >= 3:
+                break
+        if len(snippets) >= 3:
+            break
+
+    if not snippets:
+        return {
+            "answer": (
+                "Nao encontrei uma regra do condominio que responda essa pergunta com seguranca. "
+                "Tente perguntar com termos como obras, piscina, pets, garagem ou salao."
+            )
+        }
+
+    return {
+        "answer": (
+            "Estas sao as regras encontradas nos documentos do condominio:\n\n"
+            + "\n\n".join(f"- {snippet}" for snippet in snippets)
+        )
+    }

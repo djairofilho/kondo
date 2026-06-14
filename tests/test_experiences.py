@@ -5,7 +5,7 @@ from fastapi.testclient import TestClient
 
 from app.core.database import SessionLocal
 from app.main import app
-from app.models import CalendarEvent, Membership, Payment, Resident
+from app.models import CalendarEvent, Document, Membership, Payment, Resident
 
 
 def test_manager_board_and_resident_experience_endpoints(create_auth_context: Callable[[str, bool], dict]) -> None:
@@ -33,6 +33,32 @@ def test_resident_portal_requires_auth() -> None:
     response = client.get("/resident-portal/home")
 
     assert response.status_code == 401
+
+
+def test_resident_rules_ask_uses_visible_rules_document(create_auth_context: Callable[[str, bool], dict]) -> None:
+    client = TestClient(app)
+    resident = create_auth_context("resident")
+
+    with SessionLocal() as db:
+        db.add(
+            Document(
+                condominium_id=resident["condominium_id"],
+                title="Regimento de obras",
+                document_type="rules",
+                content="Obras com ruido sao permitidas de segunda a sexta, das 9h as 17h.",
+                visibility="residents",
+            )
+        )
+        db.commit()
+
+    response = client.post(
+        "/resident-portal/rules/ask",
+        headers=resident["headers"],
+        json={"question": "Qual horario de obra com ruido?"},
+    )
+
+    assert response.status_code == 200
+    assert "Obras com ruido" in response.json()["answer"]
 
 
 def test_resident_portal_ignores_unit_override(create_auth_context: Callable[[str, bool], dict]) -> None:

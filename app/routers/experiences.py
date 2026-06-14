@@ -4,9 +4,10 @@ from sqlalchemy.orm import Session
 from app.core.database import get_db
 from fastapi import HTTPException, status
 
-from app.core.deps import require_roles, resolve_resident_portal_unit, resolve_resident_ticket_unit
-from app.models import Unit
+from app.core.deps import get_active_membership, require_roles, resolve_resident_portal_unit, resolve_resident_ticket_unit
+from app.models import Unit, User
 from app.schemas.condominiums import ResidentOnboarding, ResidentOnboardingUpdate
+from app.schemas.documents import DocumentAnswerRequest
 from app.schemas.payments import Payment
 from app.schemas.tickets import Ticket, TicketCreate
 from app.services.calendar_service import (
@@ -22,6 +23,7 @@ from app.services.experience_service import (
     board_financial_transparency,
     board_maintenance_status,
     manager_dashboard,
+    answer_resident_rules,
     resident_home,
     resident_rules,
 )
@@ -104,8 +106,14 @@ def get_resident_rules(db: Session = Depends(get_db)) -> dict:
 
 
 @router.post("/resident-portal/rules/ask", dependencies=[Depends(require_roles("resident", "manager", "board_member"))])
-def post_resident_rules_ask() -> dict:
-    return {"answer": "Segundo o regimento cadastrado, consulte os horarios permitidos antes de iniciar obras."}
+def post_resident_rules_ask(
+    payload: DocumentAnswerRequest,
+    current_user: User = Depends(require_roles("resident", "manager", "board_member")),
+    db: Session = Depends(get_db),
+) -> dict:
+    membership = get_active_membership(db, current_user)
+    condominium_id = membership.condominium_id if membership else None
+    return answer_resident_rules(db, payload.question, condominium_id)
 
 
 @router.get("/resident-portal/payments", response_model=list[Payment])

@@ -1,7 +1,9 @@
 from fastapi.testclient import TestClient
 
 from app.core.config import get_settings
+from app.core.database import SessionLocal
 from app.main import app
+from app.models import Document
 
 
 def test_ai_chat_manager_uses_mock_without_anthropic_key(create_auth_context) -> None:
@@ -71,6 +73,42 @@ def test_ai_chat_blocks_resident_creating_announcement(create_auth_context) -> N
         {"tool": "guardrail", "summary": "resident_announcement_write_denied"}
     ]
     assert "nao podem criar" in payload["answer"].lower()
+
+
+def test_ai_chat_resident_can_see_condominium_rules(create_auth_context) -> None:
+    settings = get_settings()
+    previous_key = settings.anthropic_api_key
+    settings.anthropic_api_key = None
+    client = TestClient(app)
+    auth = create_auth_context("resident")
+
+    with SessionLocal() as db:
+        db.add(
+            Document(
+                condominium_id=auth["condominium_id"],
+                title="Regras da piscina",
+                document_type="rules",
+                content="A piscina funciona diariamente das 8h as 21h.",
+                visibility="residents",
+            )
+        )
+        db.commit()
+
+    response = client.post(
+        "/ai/chat",
+        headers=auth["headers"],
+        data={
+            "message": "Me mostre as regras da piscina",
+            "profile": "morador",
+            "route": "/morador",
+        },
+    )
+
+    settings.anthropic_api_key = previous_key
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["provider"] != "guardrail"
+    assert "piscina" in payload["answer"].lower()
 
 
 def test_ai_chat_blocks_board_expense_write(create_auth_context) -> None:
