@@ -78,6 +78,8 @@ backend/
     routers/
     services/
     seed.py
+  storage/
+    uploads/
   tests/
   pyproject.toml
 ```
@@ -140,6 +142,17 @@ Status padrao do Kanban:
 - Documentar toda funcionalidade criada no mesmo PR.
 - Atualizar `docs/api.md` sempre que endpoints forem criados, alterados ou
   removidos.
+
+## Storage local
+
+Anexos usam storage local apenas para desenvolvimento rapido:
+
+```txt
+backend/storage/uploads/
+```
+
+Arquivos reais nao sao commitados. O backend expõe download por endpoint
+controlado e salva no banco apenas metadados de `Attachment`.
 
 ## SQLite agora, Postgres depois
 
