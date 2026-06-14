@@ -30,6 +30,11 @@ def post_agreement(payload: AgreementCreate, db: Session = Depends(get_db)) -> A
     return create_agreement(db, payload)
 
 
+@router.post("/simulate", response_model=AgreementSimulationResponse)
+def simulate_agreement_route(payload: AgreementSimulationRequest) -> AgreementSimulationResponse:
+    return simulate_agreement(payload)
+
+
 @router.get("/{agreement_id}", response_model=Agreement)
 def get_agreement(agreement_id: int, db: Session = Depends(get_db)) -> Agreement:
     return get_agreement_or_404(db, agreement_id)
@@ -38,11 +43,6 @@ def get_agreement(agreement_id: int, db: Session = Depends(get_db)) -> Agreement
 @router.patch("/{agreement_id}", response_model=Agreement, dependencies=[Depends(require_roles("manager"))])
 def patch_agreement(agreement_id: int, payload: AgreementUpdate, db: Session = Depends(get_db)) -> Agreement:
     return update_agreement(db, agreement_id, payload)
-
-
-@router.post("/simulate", response_model=AgreementSimulationResponse)
-def simulate_agreement_route(payload: AgreementSimulationRequest) -> AgreementSimulationResponse:
-    return simulate_agreement(payload)
 
 
 @router.post("/{agreement_id}/payments", response_model=Payment, dependencies=[Depends(require_roles("manager"))])
