@@ -33,3 +33,6 @@ pnpm-debug.log*
 .idea/
 .DS_Store
 Thumbs.db
+
+stitch_kondo_ai_condominium_platform/
+stitch_kondo_ai_condominium_platform.zip
