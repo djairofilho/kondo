@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
 from app.core.database import init_db
-from app.routers import agreements, announcements, auth, dashboard, documents, finance, tickets
+from app.routers import agreements, announcements, auth, dashboard, documents, finance, kanban, tickets
 
 
 settings = get_settings()
@@ -41,6 +41,7 @@ def health_check() -> dict[str, str]:
 app.include_router(dashboard.router)
 app.include_router(auth.router)
 app.include_router(tickets.router)
+app.include_router(kanban.router)
 app.include_router(finance.router)
 app.include_router(agreements.router)
 app.include_router(announcements.router)
