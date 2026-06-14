@@ -94,7 +94,7 @@ def post_resident_ticket(payload: TicketCreate, unit: Unit = Depends(resolve_res
 
 
 @router.get("/resident-portal/announcements", dependencies=[Depends(require_roles("resident", "manager", "board_member"))])
-def get_resident_announcements(db: Session = Depends(get_db)) -> dict:
+def get_resident_announcements(db: Session = Depends(get_db)) -> list[str]:
     return resident_home(db)["announcements"]
 
 
