@@ -27,6 +27,7 @@ Antes de abrir um PR, validar:
   storage mudaram.
 - `docs/use-cases.md` foi atualizado se o fluxo de usuario mudou.
 - Testes foram adicionados ou atualizados quando houver comportamento novo.
+- Se modelos SQLAlchemy mudaram, migration Alembic foi criada ou atualizada.
 
 ## Padrao de PR
 

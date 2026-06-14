@@ -81,6 +81,7 @@ backend/
   storage/
     uploads/
   tests/
+  alembic/
   pyproject.toml
 ```
 
@@ -95,6 +96,13 @@ Criar tabelas e popular dados demo:
 ```bash
 cd backend
 uv run python -m app.seed
+```
+
+Rodar migrations:
+
+```bash
+cd backend
+uv run alembic upgrade head
 ```
 
 O seed cria o Condominio Jardim Aurora com usuarios demo. A senha dos usuarios

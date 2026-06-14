@@ -22,6 +22,18 @@ uv run uvicorn app.main:app --reload
 uv run python -m app.seed
 ```
 
+## Migrations
+
+```bash
+uv run alembic upgrade head
+```
+
+Gerar nova migration depois de alterar modelos:
+
+```bash
+uv run alembic revision --autogenerate -m "describe change"
+```
+
 API local:
 
 ```txt

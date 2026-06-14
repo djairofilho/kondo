@@ -5,6 +5,7 @@ description = "FastAPI backend for Kondo condominium operations platform"
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
+  "alembic>=1.18.4",
   "fastapi>=0.124.0",
   "pydantic>=2.12.0",
   "pydantic-settings>=2.12.0",
