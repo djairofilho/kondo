@@ -6,7 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.models import CalendarEvent, Payment, Unit
 from app.schemas.calendar import CalendarEventCreate, CalendarEventUpdate
-from app.services.payment_service import generate_boleto
+from app.services.payment_service import generate_boleto, generate_component_boleto
 
 
 def _bounds(start: date | None, end: date | None) -> tuple[datetime | None, datetime | None]:
@@ -148,3 +148,12 @@ def generate_resident_boleto(db: Session, unit: Unit, payment_id: int) -> Paymen
     if payment.unit_id != unit.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Payment does not belong to unit")
     return generate_boleto(db, payment_id)
+
+
+def generate_resident_component_boleto(db: Session, unit: Unit, payment_id: int, component: str) -> Payment:
+    payment = db.get(Payment, payment_id)
+    if payment is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Payment not found")
+    if payment.unit_id != unit.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Payment does not belong to unit")
+    return generate_component_boleto(db, payment_id, component)

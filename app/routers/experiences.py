@@ -11,11 +11,14 @@ from app.schemas.payments import Payment
 from app.schemas.tickets import Ticket, TicketCreate
 from app.services.calendar_service import (
     generate_resident_boleto,
+    generate_resident_component_boleto,
     list_resident_calendar_with_payments,
     list_resident_payments,
 )
 from app.services.experience_service import (
     board_dashboard,
+    board_audit_events,
+    board_decisions,
     board_financial_transparency,
     board_maintenance_status,
     manager_dashboard,
@@ -61,13 +64,13 @@ def get_board_maintenance_status(db: Session = Depends(get_db)) -> dict:
 
 
 @router.get("/board/decisions", dependencies=[Depends(require_roles("manager", "board_member"))])
-def get_board_decisions() -> dict:
-    return {"decisions": []}
+def get_board_decisions(db: Session = Depends(get_db)) -> dict:
+    return board_decisions(db)
 
 
 @router.get("/board/audit-events", dependencies=[Depends(require_roles("manager", "board_member"))])
-def get_board_audit_events() -> dict:
-    return {"events": []}
+def get_board_audit_events(db: Session = Depends(get_db)) -> dict:
+    return board_audit_events(db)
 
 
 @router.get("/resident-portal/home")
@@ -113,6 +116,11 @@ def get_resident_payments(unit: Unit | None = Depends(resolve_resident_portal_un
 @router.post("/resident-portal/payments/{payment_id}/generate-boleto", response_model=Payment)
 def post_resident_boleto(payment_id: int, unit: Unit | None = Depends(resolve_resident_portal_unit), db: Session = Depends(get_db)) -> Payment:
     return generate_resident_boleto(db, require_unit(unit), payment_id)
+
+
+@router.post("/resident-portal/payments/{payment_id}/components/{component}/generate-boleto", response_model=Payment)
+def post_resident_component_boleto(payment_id: int, component: str, unit: Unit | None = Depends(resolve_resident_portal_unit), db: Session = Depends(get_db)) -> Payment:
+    return generate_resident_component_boleto(db, require_unit(unit), payment_id, component)
 
 
 @router.get("/resident-portal/calendar")

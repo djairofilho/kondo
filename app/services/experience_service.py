@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from app.models import Announcement, Document, Expense, Ticket, Unit, WorkItem
+from app.models import Announcement, AuditEvent, Document, Expense, Ticket, Unit, WorkItem
 from app.services.finance_service import get_finance_summary
 
 
@@ -53,6 +53,46 @@ def board_maintenance_status(db: Session) -> dict:
         "items": [
             {"id": item.id, "title": item.title, "status": item.status, "priority": item.priority}
             for item in db.query(WorkItem).order_by(WorkItem.created_at.desc()).limit(20).all()
+        ]
+    }
+
+
+def board_decisions(db: Session) -> dict:
+    pending_expenses = db.query(Expense).filter(Expense.status != "paid").order_by(Expense.amount.desc()).limit(4).all()
+    urgent_items = db.query(WorkItem).filter(WorkItem.status != "resolved").order_by(WorkItem.created_at.desc()).limit(4).all()
+    decisions = [
+        {
+            "title": f"Aprovar pagamento: {expense.description}",
+            "status": "pending",
+            "amount": expense.amount,
+            "category": expense.category,
+        }
+        for expense in pending_expenses
+    ]
+    decisions.extend(
+        {
+            "title": f"Definir encaminhamento: {item.title}",
+            "status": item.status,
+            "priority": item.priority,
+        }
+        for item in urgent_items
+    )
+    return {"decisions": decisions[:6]}
+
+
+def board_audit_events(db: Session) -> dict:
+    events = db.query(AuditEvent).order_by(AuditEvent.created_at.desc()).limit(20).all()
+    return {
+        "events": [
+            {
+                "id": event.id,
+                "action": event.action,
+                "entity_type": event.entity_type,
+                "entity_id": event.entity_id,
+                "event_metadata": event.event_metadata or {},
+                "created_at": event.created_at,
+            }
+            for event in events
         ]
     }
 
