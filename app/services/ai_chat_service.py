@@ -1,4 +1,5 @@
 import asyncio
+import unicodedata
 from dataclasses import dataclass
 from datetime import date
 from decimal import Decimal
@@ -19,6 +20,7 @@ from app.models import (
     Document,
     Expense,
     Membership,
+    Resident,
     Revenue,
     Ticket,
     Unit,
@@ -63,7 +65,8 @@ Ferramentas disponiveis:
 
 Diretrizes:
 - Use ferramentas quando o usuario pedir uma acao clara ("adiciona", "registra", "cria", "abre", "publica", "muda status").
-- Para despesas acima de R$5.000 ou publicacoes imediatas, confirme os dados antes de executar.
+- Para despesas acima de R$5.000, publicacoes imediatas e chamados marcados como resolvidos, confirme os dados antes de executar.
+- Confirmar significa que o usuario respondeu explicitamente algo como "Confirmo, pode executar"; listar dados para revisao nao e confirmacao.
 - Nunca finja ter executado uma acao. Informe sempre o resultado real da ferramenta.
 - No campo action_taken do resultado, informe a acao executada (ou "none" se nenhuma tool foi chamada).
 - No campo entity_id, informe o id da entidade criada/atualizada (ou null).
@@ -84,7 +87,7 @@ Ferramentas disponiveis:
 
 Diretrizes:
 - Foque em transparencia, resumos financeiros e governanca.
-- Para comunicados, confirme audiencia e tom antes de publicar.
+- Para comunicados, confirme audiencia e tom antes de publicar. Confirmar exige resposta explicita do usuario.
 - No campo action_taken, informe a acao executada (ou "none").
 - No campo entity_id, informe o id da entidade criada (ou null).
 """.strip()
@@ -98,6 +101,12 @@ Voce NAO tem acesso a dados financeiros do condominio, nao pode criar comunicado
 
 Ferramentas disponiveis:
 - abrir_chamado: abre um chamado para a sua unidade (somente sua unidade)
+
+IMPORTANTE sobre abrir_chamado:
+- A unidade do morador ja esta identificada no sistema — NUNCA peca o numero do apartamento, bloco ou ID de unidade.
+- Para abrir o chamado voce precisa apenas de: titulo (curto), descricao do problema e localizacao exata dentro do condominio (ex: "banheiro da suite", "corredor do 3o andar").
+- Se o morador ja descreveu o problema com clareza suficiente, abra o chamado diretamente sem fazer mais perguntas.
+- So peca mais detalhes se a descricao for realmente insuficiente para entender o problema.
 
 Diretrizes:
 - Ajude o morador a descrever o problema com clareza para abrir o chamado corretamente.
@@ -141,6 +150,7 @@ class KondoDeps:
     unit_id: int | None   # unidade do membro logado (None = sem unidade vinculada)
     user_id: int          # id do usuário autenticado — para AuditEvent e created_by
     profile: str
+    user_message: str
 
 
 # ---------------------------------------------------------------------------
@@ -157,7 +167,7 @@ def _audit(
     deps: KondoDeps,
     action: str,
     entity_type: str,
-    entity_id: int,
+    entity_id: int | None,
     meta: dict | None = None,
 ) -> None:
     db.add(AuditEvent(
@@ -169,6 +179,174 @@ def _audit(
         event_metadata=meta or {},
     ))
     db.commit()
+
+
+def _audit_guardrail(
+    db: Session,
+    condominium_id: int | None,
+    user_id: int | None,
+    reason: str,
+    profile: str,
+    meta: dict | None = None,
+) -> None:
+    db.add(AuditEvent(
+        condominium_id=condominium_id,
+        actor_user_id=user_id,
+        action="ai.guardrail.blocked",
+        entity_type="ai_chat",
+        entity_id=None,
+        event_metadata={"reason": reason, "profile": profile, **(meta or {})},
+    ))
+    db.commit()
+
+
+def _normalize_text(value: str) -> str:
+    normalized = unicodedata.normalize("NFD", value.lower())
+    return "".join(char for char in normalized if unicodedata.category(char) != "Mn")
+
+
+def _has_explicit_confirmation(message: str) -> bool:
+    text = _normalize_text(message)
+    cancellation_phrases = (
+        "nao confirmo",
+        "sem confirmar",
+        "nao execute",
+        "nao publique",
+        "nao registre",
+        "nao altere",
+    )
+    confirmation_phrases = (
+        "confirmo",
+        "pode executar",
+        "pode registrar",
+        "pode publicar",
+        "pode alterar",
+        "pode fechar",
+        "pode resolver",
+        "autorizo",
+        "esta confirmado",
+        "sim, execute",
+        "sim execute",
+        "sim, pode",
+        "sim pode",
+    )
+    return any(phrase in text for phrase in confirmation_phrases) and not any(
+        phrase in text for phrase in cancellation_phrases
+    )
+
+
+def _confirmation_required(deps: KondoDeps, operation: str, details: dict) -> str:
+    _audit(
+        deps.db,
+        deps,
+        "ai.guardrail.confirmation_required",
+        "ai_chat",
+        None,
+        {"operation": operation, "details": details},
+    )
+    detail_text = "; ".join(f"{key}: {value}" for key, value in details.items())
+    return (
+        f"Confirmacao necessaria antes de executar '{operation}'. "
+        f"Revise os dados ({detail_text}) e responda com uma confirmacao explicita, "
+        "por exemplo: 'Confirmo, pode executar'. Nenhuma alteracao foi gravada."
+    )
+
+
+def _blocked_response(
+    db: Session,
+    condominium_id: int | None,
+    user_id: int | None,
+    profile: str,
+    reason: str,
+    answer: str,
+) -> AIChatResponse:
+    _audit_guardrail(db, condominium_id, user_id, reason, profile)
+    return AIChatResponse(
+        answer=answer,
+        actions=_actions_for("", profile),
+        tool_calls=[AIChatToolCall(tool="guardrail", summary=reason)],
+        attachments=[],
+        confidence="high",
+        source="mock",
+        provider="guardrail",
+        model="policy",
+    )
+
+
+def _preflight_guardrail(
+    db: Session,
+    current_user: User,
+    condominium_id: int | None,
+    profile: str,
+    message: str,
+) -> AIChatResponse | None:
+    text = _normalize_text(message)
+    finance_terms = ("finance", "despesa", "caixa", "inadimpl", "acordo", "boleto", "receita")
+    write_terms = (
+        "adiciona",
+        "adicione",
+        "registra",
+        "registre",
+        "lanca",
+        "cria despesa",
+        "crie despesa",
+        "crie uma despesa",
+    )
+    status_terms = (
+        "muda status",
+        "alterar status",
+        "atualiza status",
+        "fecha chamado",
+        "fechar chamado",
+        "resolve chamado",
+        "resolver chamado",
+    )
+
+    if profile == "morador" and any(term in text for term in finance_terms):
+        return _blocked_response(
+            db,
+            condominium_id,
+            current_user.id,
+            profile,
+            "resident_finance_access_denied",
+            "Dados financeiros do condominio sao restritos a gestao. Posso te ajudar com chamados, comunicados e regras da sua unidade.",
+        )
+
+    if profile == "morador" and any(term in text for term in ("comunicado", "aviso")) and any(
+        term in text for term in ("cria", "publique", "publica", "envia")
+    ):
+        return _blocked_response(
+            db,
+            condominium_id,
+            current_user.id,
+            profile,
+            "resident_announcement_write_denied",
+            "Moradores nao podem criar ou publicar comunicados pela IA. Posso ajudar a escrever uma sugestao para enviar a gestao.",
+        )
+
+    if profile == "conselho" and any(term in text for term in write_terms) and any(
+        term in text for term in ("despesa", "gasto")
+    ):
+        return _blocked_response(
+            db,
+            condominium_id,
+            current_user.id,
+            profile,
+            "board_expense_write_denied",
+            "Registro de despesas e exclusivo do sindico. Posso revisar os dados e preparar uma recomendacao para aprovacao.",
+        )
+
+    if profile == "conselho" and any(term in text for term in status_terms):
+        return _blocked_response(
+            db,
+            condominium_id,
+            current_user.id,
+            profile,
+            "board_ticket_status_write_denied",
+            "Alteracao de status de chamados e exclusiva do sindico. Posso ajudar a montar uma recomendacao para a gestao.",
+        )
+
+    return None
 
 
 def _profile_for_user(db: Session, current_user: User, requested_profile: str | None) -> str:
@@ -231,7 +409,20 @@ def _context_for_user(db: Session, current_user: User, profile: str) -> dict:
         "announcements_count": announcements_count,
     }
 
-    # Dados financeiros: somente sindico e conselho
+    if profile == "morador" and unit_id is not None:
+        unit = db.get(Unit, unit_id)
+        if unit is not None:
+            context["unit_number"] = unit.number
+            context["unit_block"] = unit.block or ""
+            resident = (
+                db.query(Resident)
+                .filter(Resident.unit_id == unit_id, Resident.status == "active")
+                .order_by(Resident.created_at.asc())
+                .first()
+            )
+            if resident:
+                context["resident_name"] = resident.name
+
     if profile in {"sindico", "conselho"}:
         received = db.query(func.sum(Revenue.amount)).filter(Revenue.status == "paid")
         expected = db.query(func.sum(Revenue.amount))
@@ -276,6 +467,8 @@ def _actions_for(message: str, profile: str) -> list[AIChatAction]:
         actions.append(AIChatAction(label="Abrir documentos", to="/documentos"))
     if profile == "morador":
         actions.append(AIChatAction(label="Abrir portal", to="/morador"))
+    elif profile == "conselho" and not actions:
+        actions.append(AIChatAction(label="Abrir conselho", to="/conselho"))
     elif not actions:
         actions.append(AIChatAction(label="Central do sindico", to="/sindico"))
     actions.append(AIChatAction(label="Dashboard", to="/"))
@@ -363,97 +556,165 @@ def _build_agent_with_tools(deps: KondoDeps):
     )
 
     # ------------------------------------------------------------------ #
-    # READ tools — plain, todos os perfis
+    # abrir_chamado para MORADOR — unit_id resolvido automaticamente
     # ------------------------------------------------------------------ #
 
-    @agent.tool_plain
-    def listar_categorias_despesa() -> str:
-        """Retorna as categorias válidas para registro de despesa."""
-        return "Categorias disponíveis: " + ", ".join(sorted(VALID_EXPENSE_CATEGORIES))
+    if deps.profile == "morador":
 
-    @agent.tool_plain
-    def listar_status_chamado() -> str:
-        """Retorna os status válidos para atualização de chamado no Kanban."""
-        return "Status válidos: " + ", ".join(sorted(VALID_TICKET_STATUSES))
+        @agent.tool
+        def abrir_chamado(
+            ctx: RunContext[KondoDeps],
+            titulo: str,
+            descricao: str,
+            localizacao: str,
+        ) -> str:
+            """
+            Abre um chamado para a unidade do morador logado. A unidade é resolvida automaticamente.
 
-    # ------------------------------------------------------------------ #
-    # abrir_chamado — todos os perfis, ownership enforced para morador
-    # ------------------------------------------------------------------ #
-
-    @agent.tool
-    def abrir_chamado(
-        ctx: RunContext[KondoDeps],
-        titulo: str,
-        descricao: str,
-        localizacao: str,
-        unit_id: int,
-    ) -> str:
-        """
-        Abre um novo chamado operacional e cria o WorkItem no Kanban automaticamente.
-
-        Args:
-            titulo: Título curto do problema (ex: "Vazamento no corredor bloco B").
-            descricao: Descrição detalhada do que está acontecendo.
-            localizacao: Local exato (ex: "Corredor 3º andar bloco B").
-            unit_id: ID da unidade que reporta o chamado.
-        """
-        # Morador só pode abrir chamado na própria unidade
-        if ctx.deps.profile == "morador":
+            Args:
+                titulo: Resumo curto do problema (ex: "Vazamento no banheiro").
+                descricao: Descrição do que está acontecendo.
+                localizacao: Local exato dentro do apartamento ou condomínio (ex: "banheiro da suíte", "corredor do 3º andar").
+            """
             if ctx.deps.unit_id is None:
                 return "Sua conta não possui unidade vinculada. Contate o síndico."
-            if unit_id != ctx.deps.unit_id:
-                return (
-                    f"Acesso negado: como morador, você só pode abrir chamados "
-                    f"para sua unidade (id={ctx.deps.unit_id})."
-                )
 
-        db = ctx.deps.db
-        unit = db.get(Unit, unit_id)
-        if unit is None:
-            return f"Unidade id={unit_id} não encontrada."
-        if unit.condominium_id != ctx.deps.condominium_id:
-            return "Acesso negado: unidade pertence a outro condomínio."
+            db = ctx.deps.db
+            unit = db.get(Unit, ctx.deps.unit_id)
+            if unit is None or unit.condominium_id != ctx.deps.condominium_id:
+                return "Unidade não encontrada ou pertence a outro condomínio."
 
-        if len(titulo.strip()) < 3:
-            return "O título do chamado deve ter pelo menos 3 caracteres."
-        if len(descricao.strip()) < 5:
-            return "A descrição deve ter pelo menos 5 caracteres."
+            if len(titulo.strip()) < 3:
+                return "O título deve ter pelo menos 3 caracteres."
+            if len(descricao.strip()) < 5:
+                return "A descrição deve ter pelo menos 5 caracteres."
+            if len(localizacao.strip()) < 3:
+                return "A localização deve ter pelo menos 3 caracteres."
 
-        ticket = Ticket(
-            condominium_id=ctx.deps.condominium_id,
-            unit_id=unit_id,
-            created_by_user_id=ctx.deps.user_id,
-            title=titulo.strip(),
-            description=descricao.strip(),
-            location=localizacao.strip(),
-            status="received",
-        )
-        db.add(ticket)
-        db.flush()
+            ticket = Ticket(
+                condominium_id=ctx.deps.condominium_id,
+                unit_id=ctx.deps.unit_id,
+                created_by_user_id=ctx.deps.user_id,
+                title=titulo.strip(),
+                description=descricao.strip(),
+                location=localizacao.strip(),
+                status="received",
+            )
+            db.add(ticket)
+            db.flush()
 
-        from app.models import WorkItem as WorkItemModel
-        db.add(WorkItemModel(
-            condominium_id=ctx.deps.condominium_id,
-            ticket_id=ticket.id,
-            type="ticket",
-            title=titulo.strip(),
-            description=descricao.strip(),
-            status="received",
-            priority="medium",
-            source_type="ticket",
-            source_id=ticket.id,
-        ))
-        db.commit()
-        db.refresh(ticket)
+            from app.models import WorkItem as WorkItemModel
+            db.add(WorkItemModel(
+                condominium_id=ctx.deps.condominium_id,
+                ticket_id=ticket.id,
+                type="ticket",
+                title=titulo.strip(),
+                description=descricao.strip(),
+                status="received",
+                priority="medium",
+                source_type="ticket",
+                source_id=ticket.id,
+            ))
+            db.commit()
+            db.refresh(ticket)
 
-        _audit(db, ctx.deps, "ai.ticket.created", "ticket", ticket.id, {
-            "titulo": titulo, "via": "ai_chat",
-        })
+            _audit(db, ctx.deps, "ai.ticket.created", "ticket", ticket.id, {
+                "titulo": titulo, "via": "ai_chat",
+            })
 
-        return (
-            f"Chamado aberto (id={ticket.id}): '{titulo}', "
-            f"local '{localizacao}', status 'received'. WorkItem criado no Kanban."
-        )
+            return (
+                f"Chamado aberto (id={ticket.id}): '{titulo}', "
+                f"local '{localizacao}', status 'received'. WorkItem criado no Kanban."
+            )
+
+    # ------------------------------------------------------------------ #
+    # abrir_chamado para SINDICO/CONSELHO — recebe unit_id explícito
+    # ------------------------------------------------------------------ #
+
+    if deps.profile in {"sindico", "conselho"}:
+
+        @agent.tool
+        def abrir_chamado(  # noqa: F811
+            ctx: RunContext[KondoDeps],
+            titulo: str,
+            descricao: str,
+            localizacao: str,
+            unit_id: int,
+        ) -> str:
+            """
+            Abre um novo chamado operacional e cria o WorkItem no Kanban automaticamente.
+
+            Args:
+                titulo: Título curto do problema (ex: "Vazamento no corredor bloco B").
+                descricao: Descrição detalhada do que está acontecendo.
+                localizacao: Local exato (ex: "Corredor 3º andar bloco B").
+                unit_id: ID da unidade que reporta o chamado.
+            """
+            db = ctx.deps.db
+            unit = db.get(Unit, unit_id)
+            if unit is None:
+                return f"Unidade id={unit_id} não encontrada."
+            if unit.condominium_id != ctx.deps.condominium_id:
+                return "Acesso negado: unidade pertence a outro condomínio."
+
+            if len(titulo.strip()) < 3:
+                return "O título do chamado deve ter pelo menos 3 caracteres."
+            if len(descricao.strip()) < 5:
+                return "A descrição deve ter pelo menos 5 caracteres."
+            if len(localizacao.strip()) < 3:
+                return "A localização deve ter pelo menos 3 caracteres."
+
+            ticket = Ticket(
+                condominium_id=ctx.deps.condominium_id,
+                unit_id=unit_id,
+                created_by_user_id=ctx.deps.user_id,
+                title=titulo.strip(),
+                description=descricao.strip(),
+                location=localizacao.strip(),
+                status="received",
+            )
+            db.add(ticket)
+            db.flush()
+
+            from app.models import WorkItem as WorkItemModel
+            db.add(WorkItemModel(
+                condominium_id=ctx.deps.condominium_id,
+                ticket_id=ticket.id,
+                type="ticket",
+                title=titulo.strip(),
+                description=descricao.strip(),
+                status="received",
+                priority="medium",
+                source_type="ticket",
+                source_id=ticket.id,
+            ))
+            db.commit()
+            db.refresh(ticket)
+
+            _audit(db, ctx.deps, "ai.ticket.created", "ticket", ticket.id, {
+                "titulo": titulo, "via": "ai_chat",
+            })
+
+            return (
+                f"Chamado aberto (id={ticket.id}): '{titulo}', "
+                f"local '{localizacao}', status 'received'. WorkItem criado no Kanban."
+            )
+
+    # ------------------------------------------------------------------ #
+    # READ tools — plain, sindico e conselho apenas
+    # ------------------------------------------------------------------ #
+
+    if deps.profile in {"sindico", "conselho"}:
+
+        @agent.tool_plain
+        def listar_categorias_despesa() -> str:
+            """Retorna as categorias válidas para registro de despesa."""
+            return "Categorias disponíveis: " + ", ".join(sorted(VALID_EXPENSE_CATEGORIES))
+
+        @agent.tool_plain
+        def listar_status_chamado() -> str:
+            """Retorna os status válidos para atualização de chamado no Kanban."""
+            return "Status válidos: " + ", ".join(sorted(VALID_TICKET_STATUSES))
 
     # ------------------------------------------------------------------ #
     # Tools exclusivas de sindico e conselho
@@ -488,6 +749,13 @@ def _build_agent_with_tools(deps: KondoDeps):
             audiencia_norm = audiencia.lower().strip()
             if audiencia_norm not in {"residents", "managers"}:
                 audiencia_norm = "residents"
+
+            if publicar and not _has_explicit_confirmation(ctx.deps.user_message):
+                return _confirmation_required(ctx.deps, "publicar_comunicado", {
+                    "titulo": titulo.strip(),
+                    "audiencia": audiencia_norm,
+                    "publicar": publicar,
+                })
 
             db = ctx.deps.db
             status_val = "published" if publicar else "draft"
@@ -553,6 +821,14 @@ def _build_agent_with_tools(deps: KondoDeps):
             if valor <= 0:
                 return "O valor deve ser maior que zero."
 
+            if valor > 5000 and not _has_explicit_confirmation(ctx.deps.user_message):
+                return _confirmation_required(ctx.deps, "registrar_despesa_alta", {
+                    "descricao": descricao.strip(),
+                    "categoria": categoria_norm,
+                    "valor": _money(valor),
+                    "vencimento": due.isoformat(),
+                })
+
             db = ctx.deps.db
             expense = Expense(
                 condominium_id=ctx.deps.condominium_id,
@@ -603,6 +879,13 @@ def _build_agent_with_tools(deps: KondoDeps):
             if ticket.condominium_id != ctx.deps.condominium_id:
                 return "Acesso negado: chamado pertence a outro condomínio."
 
+            if status_norm == "resolved" and not _has_explicit_confirmation(ctx.deps.user_message):
+                return _confirmation_required(ctx.deps, "resolver_chamado", {
+                    "ticket_id": ticket_id,
+                    "status_atual": ticket.status,
+                    "novo_status": status_norm,
+                })
+
             status_anterior = ticket.status
             ticket.status = status_norm
             for item in ticket.work_items:
@@ -629,11 +912,20 @@ def _build_prompt(payload: AIChatRequest, context: dict, file_descriptions: list
     profile = context["profile"]
     safe_context = {
         k: v for k, v in context.items()
-        if not (k == "finance" and profile == "morador")
+        if k not in ("finance",) or profile != "morador"
     }
+
+    unit_line = ""
+    if profile == "morador" and context.get("unit_number"):
+        block = context.get("unit_block", "")
+        unit_ref = f"Bloco {block} - Apto {context['unit_number']}" if block else f"Apto {context['unit_number']}"
+        resident_name = context.get("resident_name", "")
+        unit_line = f"Unidade do morador: {unit_ref}" + (f" (titular: {resident_name})" if resident_name else "") + "\n"
+
     base = (
         f"Perfil ativo: {profile}\n"
         f"Rota atual: {payload.route or 'nao informada'}\n"
+        + unit_line +
         f"Contexto operacional: {safe_context}\n"
         f"Mensagem do usuario: {payload.message}\n"
     )
@@ -644,6 +936,8 @@ def _build_prompt(payload: AIChatRequest, context: dict, file_descriptions: list
         base = base + files_note
     return base + (
         "Responda em ate 2 paragrafos objetivos. "
+        "Se uma ferramenta retornar confirmacao necessaria, diga que nada foi gravado e peca confirmacao explicita. "
+        "Se uma ferramenta negar permissao, explique o limite do perfil sem contornar a regra. "
         "Preencha action_taken e entity_id corretamente no resultado estruturado."
     )
 
@@ -862,6 +1156,10 @@ async def chat_with_kondo_ai(
     condominium_id = membership.condominium_id if membership else 1
     unit_id = membership.unit_id if membership else None
 
+    blocked = _preflight_guardrail(db, current_user, condominium_id, profile, payload.message)
+    if blocked is not None:
+        return blocked
+
     can_use_anthropic = (
         settings.ai_provider == "anthropic"
         and bool(settings.anthropic_api_key)
@@ -883,6 +1181,7 @@ async def chat_with_kondo_ai(
                 unit_id=unit_id,
                 user_id=current_user.id,
                 profile=profile,
+                user_message=payload.message,
             )
 
             attachment_refs: list[AIChatAttachmentRef] = []
