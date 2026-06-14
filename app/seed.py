@@ -13,6 +13,7 @@ from app.models import (
     Attachment,
     AuditEvent,
     CalendarEvent,
+    ChatSession,
     Condominium,
     Delinquency,
     Document,
@@ -189,6 +190,7 @@ def reset_demo_data(db: Session) -> None:
         db.query(Quote).filter(Quote.vendor_id.in_(vendor_ids)).delete(synchronize_session=False)
 
     db.query(Attachment).filter(Attachment.condominium_id == condominium.id).delete(synchronize_session=False)
+    db.query(ChatSession).filter(ChatSession.condominium_id == condominium.id).delete(synchronize_session=False)
     db.query(AuditEvent).filter(AuditEvent.condominium_id == condominium.id).delete(synchronize_session=False)
     db.query(WorkItem).filter(WorkItem.condominium_id == condominium.id).delete(synchronize_session=False)
     db.query(Ticket).filter(Ticket.condominium_id == condominium.id).delete(synchronize_session=False)
@@ -210,6 +212,28 @@ def reset_demo_data(db: Session) -> None:
 
     if demo_user_ids:
         db.query(AuditEvent).filter(AuditEvent.actor_user_id.in_(demo_user_ids)).delete(synchronize_session=False)
+        db.query(Attachment).filter(Attachment.uploaded_by_user_id.in_(demo_user_ids)).update(
+            {Attachment.uploaded_by_user_id: None},
+            synchronize_session=False,
+        )
+        db.query(ChatSession).filter(ChatSession.user_id.in_(demo_user_ids)).delete(synchronize_session=False)
+        db.query(Membership).filter(Membership.user_id.in_(demo_user_ids)).delete(synchronize_session=False)
+        db.query(Resident).filter(Resident.user_id.in_(demo_user_ids)).update(
+            {Resident.user_id: None},
+            synchronize_session=False,
+        )
+        db.query(Ticket).filter(Ticket.created_by_user_id.in_(demo_user_ids)).update(
+            {Ticket.created_by_user_id: None},
+            synchronize_session=False,
+        )
+        db.query(TicketComment).filter(TicketComment.author_user_id.in_(demo_user_ids)).update(
+            {TicketComment.author_user_id: None},
+            synchronize_session=False,
+        )
+        db.query(WorkItem).filter(WorkItem.assigned_to_user_id.in_(demo_user_ids)).update(
+            {WorkItem.assigned_to_user_id: None},
+            synchronize_session=False,
+        )
         db.query(User).filter(User.id.in_(demo_user_ids)).delete(synchronize_session=False)
 
     db.commit()
