@@ -338,6 +338,14 @@ Resposta:
 
 ## Comunicados
 
+```txt
+GET   /announcements
+POST  /announcements
+GET   /announcements/{announcement_id}
+PATCH /announcements/{announcement_id}
+POST  /announcements/{announcement_id}/publish
+```
+
 ### `POST /announcements/generate-ai`
 
 Gera comunicado a partir de rascunho.
@@ -350,6 +358,14 @@ Gera comunicado a partir de rascunho.
 ```
 
 ## Documentos
+
+```txt
+GET    /documents
+POST   /documents
+GET    /documents/{document_id}
+PATCH  /documents/{document_id}
+DELETE /documents/{document_id}
+```
 
 ### `POST /documents/{id}/summarize`
 
