@@ -14,7 +14,7 @@ def test_ai_chat_manager_uses_mock_without_anthropic_key(create_auth_context) ->
     response = client.post(
         "/ai/chat",
         headers=auth["headers"],
-        json={"message": "organize meu dia", "profile": "sindico", "route": "/sindico"},
+        data={"message": "organize meu dia", "profile": "sindico", "route": "/sindico"},
     )
 
     settings.anthropic_api_key = previous_key
@@ -35,7 +35,7 @@ def test_ai_chat_allows_resident_without_restricted_finance_context(create_auth_
     response = client.post(
         "/ai/chat",
         headers=auth["headers"],
-        json={"message": "me mostre caixa e inadimplencia", "profile": "morador", "route": "/morador"},
+        data={"message": "me mostre caixa e inadimplencia", "profile": "morador", "route": "/morador"},
     )
 
     settings.anthropic_api_key = previous_key
