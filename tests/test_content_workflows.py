@@ -36,6 +36,15 @@ def test_document_crud_and_ai_helpers(create_auth_context: Callable[[str, bool],
     assert upload.status_code == 200
     assert upload.json()["entity_type"] == "document"
     assert upload.json()["uploaded_by_user_id"] == manager["user_id"]
+    attachment_id = upload.json()["id"]
+
+    attachments = client.get(f"/documents/{document_id}/attachments", headers=manager["headers"])
+    assert attachments.status_code == 200
+    assert attachments.json()[0]["id"] == attachment_id
+
+    download = client.get(f"/documents/{document_id}/attachments/{attachment_id}/download", headers=manager["headers"])
+    assert download.status_code == 200
+    assert download.content == b"pdf"
 
 
 def test_announcement_crud_publish_and_generation(create_auth_context: Callable[[str, bool], dict]) -> None:

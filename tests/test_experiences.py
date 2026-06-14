@@ -229,6 +229,19 @@ def test_resident_portal_can_create_ticket_for_own_unit_only(create_auth_context
     client = TestClient(app)
     resident = create_auth_context("resident")
 
+    simple_response = client.post(
+        "/resident-portal/tickets",
+        headers=resident["headers"],
+        json={
+            "title": "Infiltracao na parede",
+            "description": "A parede do quarto esta com umidade.",
+            "location": "Quarto",
+        },
+    )
+
+    assert simple_response.status_code == 200
+    assert simple_response.json()["unit_id"] == resident["unit_id"]
+
     response = client.post(
         "/resident-portal/tickets",
         headers=resident["headers"],
