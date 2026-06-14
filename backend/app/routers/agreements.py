@@ -3,6 +3,7 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.deps import require_roles
 from app.schemas.agreements import Agreement, AgreementCreate, AgreementSimulationRequest, AgreementSimulationResponse, AgreementUpdate
 from app.schemas.payments import Payment
 from app.services.agreement_service import (
@@ -16,7 +17,7 @@ from app.services.agreement_service import (
 )
 
 
-router = APIRouter(prefix="/agreements", tags=["agreements"])
+router = APIRouter(prefix="/agreements", tags=["agreements"], dependencies=[Depends(require_roles("manager", "board_member"))])
 
 
 @router.get("", response_model=list[Agreement])
@@ -24,7 +25,7 @@ def get_agreements(db: Session = Depends(get_db)) -> list[Agreement]:
     return list_agreements(db)
 
 
-@router.post("", response_model=Agreement)
+@router.post("", response_model=Agreement, dependencies=[Depends(require_roles("manager"))])
 def post_agreement(payload: AgreementCreate, db: Session = Depends(get_db)) -> Agreement:
     return create_agreement(db, payload)
 
@@ -34,7 +35,7 @@ def get_agreement(agreement_id: int, db: Session = Depends(get_db)) -> Agreement
     return get_agreement_or_404(db, agreement_id)
 
 
-@router.patch("/{agreement_id}", response_model=Agreement)
+@router.patch("/{agreement_id}", response_model=Agreement, dependencies=[Depends(require_roles("manager"))])
 def patch_agreement(agreement_id: int, payload: AgreementUpdate, db: Session = Depends(get_db)) -> Agreement:
     return update_agreement(db, agreement_id, payload)
 
@@ -44,12 +45,12 @@ def simulate_agreement_route(payload: AgreementSimulationRequest) -> AgreementSi
     return simulate_agreement(payload)
 
 
-@router.post("/{agreement_id}/payments", response_model=Payment)
+@router.post("/{agreement_id}/payments", response_model=Payment, dependencies=[Depends(require_roles("manager"))])
 def post_agreement_payment(agreement_id: int, db: Session = Depends(get_db)) -> Payment:
     return add_agreement_payment(db, agreement_id)
 
 
-@router.post("/{agreement_id}/cancel", response_model=Agreement)
+@router.post("/{agreement_id}/cancel", response_model=Agreement, dependencies=[Depends(require_roles("manager"))])
 def post_cancel_agreement(agreement_id: int, db: Session = Depends(get_db)) -> Agreement:
     return cancel_agreement(db, agreement_id)
 

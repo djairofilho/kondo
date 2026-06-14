@@ -3,6 +3,7 @@ from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.deps import require_roles
 from app.schemas.finance import DelinquencyItem, DelinquencyUpdate, FinanceSummary
 from app.schemas.payments import Expense, ExpenseCreate, ExpenseUpdate, Payment, PaymentCreate, PaymentUpdate, Revenue, RevenueCreate, RevenueUpdate
 from app.services.finance_service import get_cashflow, get_delinquencies, get_delinquency_or_404, get_finance_summary, get_monthly_report, update_delinquency
@@ -24,7 +25,7 @@ from app.services.payment_service import (
 )
 
 
-router = APIRouter(tags=["finance"])
+router = APIRouter(tags=["finance"], dependencies=[Depends(require_roles("manager", "board_member"))])
 
 
 @router.get("/finance/summary", response_model=FinanceSummary)
@@ -57,7 +58,7 @@ def get_delinquency(delinquency_id: int, db: Session = Depends(get_db)) -> Delin
     return get_delinquency_or_404(db, delinquency_id)
 
 
-@router.patch("/delinquencies/{delinquency_id}", response_model=DelinquencyItem)
+@router.patch("/delinquencies/{delinquency_id}", response_model=DelinquencyItem, dependencies=[Depends(require_roles("manager"))])
 def patch_delinquency(delinquency_id: int, payload: DelinquencyUpdate, db: Session = Depends(get_db)) -> DelinquencyItem:
     return update_delinquency(db, delinquency_id, payload)
 
@@ -67,7 +68,7 @@ def get_revenues(db: Session = Depends(get_db)) -> list[Revenue]:
     return list_revenues(db)
 
 
-@router.post("/revenues", response_model=Revenue)
+@router.post("/revenues", response_model=Revenue, dependencies=[Depends(require_roles("manager"))])
 def post_revenue(payload: RevenueCreate, db: Session = Depends(get_db)) -> Revenue:
     return create_revenue(db, payload)
 
@@ -77,7 +78,7 @@ def get_revenue_route(revenue_id: int, db: Session = Depends(get_db)) -> Revenue
     return get_revenue(db, revenue_id)
 
 
-@router.patch("/revenues/{revenue_id}", response_model=Revenue)
+@router.patch("/revenues/{revenue_id}", response_model=Revenue, dependencies=[Depends(require_roles("manager"))])
 def patch_revenue(revenue_id: int, payload: RevenueUpdate, db: Session = Depends(get_db)) -> Revenue:
     return update_revenue(db, revenue_id, payload)
 
@@ -87,7 +88,7 @@ def get_expenses(db: Session = Depends(get_db)) -> list[Expense]:
     return list_expenses(db)
 
 
-@router.post("/expenses", response_model=Expense)
+@router.post("/expenses", response_model=Expense, dependencies=[Depends(require_roles("manager"))])
 def post_expense(payload: ExpenseCreate, db: Session = Depends(get_db)) -> Expense:
     return create_expense(db, payload)
 
@@ -97,7 +98,7 @@ def get_expense_route(expense_id: int, db: Session = Depends(get_db)) -> Expense
     return get_expense(db, expense_id)
 
 
-@router.patch("/expenses/{expense_id}", response_model=Expense)
+@router.patch("/expenses/{expense_id}", response_model=Expense, dependencies=[Depends(require_roles("manager"))])
 def patch_expense(expense_id: int, payload: ExpenseUpdate, db: Session = Depends(get_db)) -> Expense:
     return update_expense(db, expense_id, payload)
 
@@ -107,7 +108,7 @@ def get_payments(db: Session = Depends(get_db)) -> list[Payment]:
     return list_payments(db)
 
 
-@router.post("/payments", response_model=Payment)
+@router.post("/payments", response_model=Payment, dependencies=[Depends(require_roles("manager"))])
 def post_payment(payload: PaymentCreate, db: Session = Depends(get_db)) -> Payment:
     return create_payment(db, payload)
 
@@ -117,17 +118,17 @@ def get_payment_route(payment_id: int, db: Session = Depends(get_db)) -> Payment
     return get_payment(db, payment_id)
 
 
-@router.patch("/payments/{payment_id}", response_model=Payment)
+@router.patch("/payments/{payment_id}", response_model=Payment, dependencies=[Depends(require_roles("manager"))])
 def patch_payment(payment_id: int, payload: PaymentUpdate, db: Session = Depends(get_db)) -> Payment:
     return update_payment(db, payment_id, payload)
 
 
-@router.post("/payments/{payment_id}/mark-paid", response_model=Payment)
+@router.post("/payments/{payment_id}/mark-paid", response_model=Payment, dependencies=[Depends(require_roles("manager"))])
 def post_mark_payment_paid(payment_id: int, db: Session = Depends(get_db)) -> Payment:
     return mark_payment_paid(db, payment_id)
 
 
-@router.post("/payments/{payment_id}/generate-boleto", response_model=Payment)
+@router.post("/payments/{payment_id}/generate-boleto", response_model=Payment, dependencies=[Depends(require_roles("manager"))])
 def post_generate_boleto(payment_id: int, db: Session = Depends(get_db)) -> Payment:
     return generate_boleto(db, payment_id)
 
