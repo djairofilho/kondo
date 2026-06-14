@@ -66,6 +66,18 @@ Lista os acessos do usuario a condominios.
 
 Lista papeis e permissoes derivadas de memberships.
 
+## Admin da plataforma
+
+Endpoints exigem token de usuario `platform_admin`.
+
+```txt
+GET  /admin/overview
+GET  /admin/condominiums
+POST /admin/condominiums
+GET  /admin/users
+GET  /admin/audit-events
+```
+
 ## Dashboard
 
 ### `GET /dashboard`

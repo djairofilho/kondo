@@ -84,6 +84,8 @@ GET  /me/permissions
 
 ### Admin Plataforma
 
+Status: implementado.
+
 ```txt
 GET  /admin/overview
 GET  /admin/condominiums
