@@ -1,0 +1,31 @@
+.opencode/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.env
+.env.*
+*.db
+*.sqlite
+*.sqlite3
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Editors and OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
