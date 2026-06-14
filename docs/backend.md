@@ -65,6 +65,15 @@ backend/
       deps.py
       security.py
     models/
+      attachments.py
+      audit.py
+      base.py
+      content.py
+      finance.py
+      identity.py
+      operations.py
+      property.py
+      vendors.py
     schemas/
     routers/
     services/
