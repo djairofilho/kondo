@@ -23,6 +23,14 @@ def test_document_crud_and_ai_helpers() -> None:
     answer = client.post(f"/documents/{document_id}/ask", json={"question": "Pode obra no sabado?"})
     assert answer.status_code == 200
 
+    upload = client.post(
+        "/documents/upload",
+        data={"condominium_id": "1", "document_id": str(document_id), "visibility": "managers"},
+        files={"file": ("regimento.pdf", b"pdf", "application/pdf")},
+    )
+    assert upload.status_code == 200
+    assert upload.json()["entity_type"] == "document"
+
 
 def test_announcement_crud_publish_and_generation() -> None:
     client = TestClient(app)

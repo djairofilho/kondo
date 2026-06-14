@@ -2,8 +2,9 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.models import Ticket as TicketModel
+from app.models import TicketComment
 from app.models import WorkItem
-from app.schemas.tickets import TicketAIClassification, TicketCreate, TicketStatusUpdate, TicketUpdate
+from app.schemas.tickets import TicketAIClassification, TicketAssign, TicketCommentCreate, TicketCreate, TicketStatusUpdate, TicketUpdate
 
 
 def list_tickets(db: Session) -> list[TicketModel]:
@@ -68,6 +69,29 @@ def update_ticket_status(db: Session, ticket_id: int, payload: TicketStatusUpdat
     db.commit()
     db.refresh(ticket)
     return ticket
+
+
+def assign_ticket(db: Session, ticket_id: int, payload: TicketAssign) -> TicketModel:
+    ticket = get_ticket_or_404(db, ticket_id)
+    for item in ticket.work_items:
+        item.assigned_to_user_id = payload.assigned_to_user_id
+    db.commit()
+    db.refresh(ticket)
+    return ticket
+
+
+def list_ticket_comments(db: Session, ticket_id: int) -> list[TicketComment]:
+    get_ticket_or_404(db, ticket_id)
+    return db.query(TicketComment).filter(TicketComment.ticket_id == ticket_id).order_by(TicketComment.created_at.asc()).all()
+
+
+def create_ticket_comment(db: Session, ticket_id: int, payload: TicketCommentCreate) -> TicketComment:
+    get_ticket_or_404(db, ticket_id)
+    comment = TicketComment(ticket_id=ticket_id, **payload.model_dump())
+    db.add(comment)
+    db.commit()
+    db.refresh(comment)
+    return comment
 
 
 def update_ticket_ai_analysis(db: Session, ticket_id: int, classification: TicketAIClassification) -> None:

@@ -129,6 +129,18 @@ Atualiza campos basicos do chamado.
 
 Atualiza status do chamado e move os work items vinculados.
 
+### `PATCH /tickets/{id}/assign`
+
+Define responsavel nos itens operacionais vinculados ao chamado.
+
+### `GET /tickets/{id}/comments`
+
+Lista comentarios do chamado.
+
+### `POST /tickets/{id}/comments`
+
+Cria comentario no chamado.
+
 ### `POST /tickets/{id}/classify-ai`
 
 Classifica um chamado com IA ou simulacao.
@@ -434,6 +446,7 @@ POST   /documents
 GET    /documents/{document_id}
 PATCH  /documents/{document_id}
 DELETE /documents/{document_id}
+POST   /documents/upload
 ```
 
 ### `POST /documents/{id}/summarize`
