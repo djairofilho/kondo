@@ -64,6 +64,7 @@ https://docs.astral.sh/uv/
 
 ```bash
 cd frontend
+cp .env.example .env
 npm install
 npm run dev
 ```
@@ -78,6 +79,7 @@ http://localhost:5173
 
 ```bash
 cd backend
+cp .env.example .env
 uv sync
 uv run uvicorn app.main:app --reload
 ```
@@ -107,6 +109,14 @@ DATABASE_URL=sqlite:///./kondo.db
 CORS_ORIGINS=http://localhost:5173
 ```
 
+Arquivos de ambiente versionados:
+
+- `.env.example`: referencia geral do monorepo.
+- `backend/.env.example`: variaveis da API.
+- `frontend/.env.example`: variaveis do app web.
+
+Arquivos `.env` reais nao devem ser commitados.
+
 ### Rodar tudo
 
 Abra dois terminais:
@@ -114,6 +124,7 @@ Abra dois terminais:
 ```bash
 # terminal 1
 cd backend
+cp .env.example .env
 uv sync
 uv run uvicorn app.main:app --reload
 ```
@@ -121,6 +132,7 @@ uv run uvicorn app.main:app --reload
 ```bash
 # terminal 2
 cd frontend
+cp .env.example .env
 npm install
 npm run dev
 ```

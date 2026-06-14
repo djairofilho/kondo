@@ -30,6 +30,8 @@ uv add psycopg[binary]
 Rodar a API:
 
 ```bash
+cp .env.example .env
+uv sync
 uv run uvicorn app.main:app --reload
 ```
 
@@ -40,6 +42,9 @@ DATABASE_URL=sqlite:///./kondo.db
 CORS_ORIGINS=http://localhost:5173
 OPENAI_API_KEY=
 ```
+
+O arquivo versionado `backend/.env.example` deve ser usado como base. O arquivo
+real `backend/.env` e local e nao deve ser commitado.
 
 Para producao com Postgres:
 
@@ -76,4 +81,3 @@ backend/
 SQLite e suficiente para desenvolvimento e demo. A migracao para Postgres deve
 ser simples se os modelos SQLAlchemy forem portaveis e as queries evitarem
 funcoes especificas do banco.
-

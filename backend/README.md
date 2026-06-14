@@ -6,6 +6,7 @@ Backend FastAPI do Kondo.
 
 ```bash
 cd backend
+cp .env.example .env
 uv sync
 ```
 
@@ -33,5 +34,5 @@ http://localhost:8000/docs
 APP_NAME=Kondo API
 DATABASE_URL=sqlite:///./kondo.db
 CORS_ORIGINS=http://localhost:5173
+OPENAI_API_KEY=
 ```
-
