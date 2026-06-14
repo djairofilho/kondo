@@ -16,6 +16,12 @@ uv sync
 uv run uvicorn app.main:app --reload
 ```
 
+## Criar dados demo
+
+```bash
+uv run python -m app.seed
+```
+
 API local:
 
 ```txt
