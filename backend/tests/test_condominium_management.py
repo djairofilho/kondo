@@ -1,4 +1,5 @@
 from fastapi.testclient import TestClient
+from uuid import uuid4
 
 from app.main import app
 
@@ -28,7 +29,7 @@ def test_condominium_unit_resident_and_membership_flow() -> None:
 
     user_response = client.post(
         "/auth/register",
-        json={"name": "Gestor Teste", "email": "gestor-mgmt@kondo.local", "password": "kondo123"},
+        json={"name": "Gestor Teste", "email": f"gestor-{uuid4().hex}@kondo.local", "password": "kondo123"},
     )
     user_id = user_response.json()["user"]["id"]
 
