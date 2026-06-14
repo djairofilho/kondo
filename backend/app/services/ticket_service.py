@@ -2,13 +2,16 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.models import Ticket as TicketModel
-from app.models import TicketComment
+from app.models import TicketComment, Unit
 from app.models import WorkItem
 from app.schemas.tickets import TicketAIClassification, TicketAssign, TicketCommentCreate, TicketCreate, TicketStatusUpdate, TicketUpdate
 
 
-def list_tickets(db: Session) -> list[TicketModel]:
-    return db.query(TicketModel).order_by(TicketModel.created_at.desc()).all()
+def list_tickets(db: Session, unit_id: int | None = None) -> list[TicketModel]:
+    query = db.query(TicketModel)
+    if unit_id is not None:
+        query = query.filter(TicketModel.unit_id == unit_id)
+    return query.order_by(TicketModel.created_at.desc()).all()
 
 
 def get_ticket(db: Session, ticket_id: int) -> TicketModel | None:
@@ -22,10 +25,12 @@ def get_ticket_or_404(db: Session, ticket_id: int) -> TicketModel:
     return ticket
 
 
-def create_ticket(db: Session, payload: TicketCreate) -> TicketModel:
+def create_ticket(db: Session, payload: TicketCreate, unit: Unit | None = None) -> TicketModel:
+    condominium_id = unit.condominium_id if unit is not None else payload.condominium_id
+    unit_id = unit.id if unit is not None else payload.unit_id
     ticket = TicketModel(
-        condominium_id=payload.condominium_id,
-        unit_id=payload.unit_id,
+        condominium_id=condominium_id,
+        unit_id=unit_id,
         title=payload.title,
         description=payload.description,
         location=payload.location,
@@ -36,7 +41,7 @@ def create_ticket(db: Session, payload: TicketCreate) -> TicketModel:
 
     db.add(
         WorkItem(
-            condominium_id=payload.condominium_id,
+            condominium_id=condominium_id,
             ticket_id=ticket.id,
             type="ticket",
             title=payload.title,
@@ -85,9 +90,9 @@ def list_ticket_comments(db: Session, ticket_id: int) -> list[TicketComment]:
     return db.query(TicketComment).filter(TicketComment.ticket_id == ticket_id).order_by(TicketComment.created_at.asc()).all()
 
 
-def create_ticket_comment(db: Session, ticket_id: int, payload: TicketCommentCreate) -> TicketComment:
+def create_ticket_comment(db: Session, ticket_id: int, payload: TicketCommentCreate, author_user_id: int) -> TicketComment:
     get_ticket_or_404(db, ticket_id)
-    comment = TicketComment(ticket_id=ticket_id, **payload.model_dump())
+    comment = TicketComment(ticket_id=ticket_id, author_user_id=author_user_id, body=payload.body, visibility=payload.visibility)
     db.add(comment)
     db.commit()
     db.refresh(comment)
@@ -103,4 +108,3 @@ def update_ticket_ai_analysis(db: Session, ticket_id: int, classification: Ticke
     for item in ticket.work_items:
         item.priority = "high" if classification.priority == "alta" else "medium"
     db.commit()
-
