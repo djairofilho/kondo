@@ -45,13 +45,24 @@ Status: implementado.
 
 ### 4. Financeiro, pagamentos e acordos
 
-Status: proximo corte.
+Status: implementado parcialmente.
 
 - Persistir receitas, despesas, inadimplencia, pagamentos e acordos.
 - Calcular resumo financeiro a partir do banco.
 - Criar endpoints CRUD basicos para receitas, despesas e pagamentos.
 - Expandir acordos para listagem, criacao, pagamento e cancelamento.
 - Manter simulacao de acordo como endpoint de apoio.
+
+Ainda falta:
+
+- `GET /finance/cashflow`
+- `GET /finance/monthly-report`
+- `POST /finance/insights-ai`
+- `GET /revenues/{revenue_id}`
+- `GET /expenses/{expense_id}`
+- `GET /payments/{payment_id}`
+- `GET /delinquencies/{delinquency_id}`
+- `PATCH /delinquencies/{delinquency_id}`
 
 ### 5. Anexos e storage local
 

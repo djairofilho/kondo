@@ -12,8 +12,12 @@ class FinanceSummary(BaseModel):
 
 
 class DelinquencyItem(BaseModel):
+    id: int | None = None
     unit_id: int
     amount_due: Decimal
     days_late: int
     risk: str
+    status: str | None = None
+
+    model_config = {"from_attributes": True}
 
