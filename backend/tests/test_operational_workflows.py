@@ -50,3 +50,30 @@ def test_ticket_status_update_moves_related_work_items() -> None:
     assert response.status_code == 200
     assert response.json()["status"] == "resolved"
 
+
+def test_ticket_comments_and_assign() -> None:
+    client = TestClient(app)
+
+    ticket_response = client.post(
+        "/tickets",
+        json={
+            "condominium_id": 1,
+            "unit_id": 1,
+            "title": "Comentario teste",
+            "description": "Chamado para comentario.",
+            "location": "Hall",
+        },
+    )
+    ticket_id = ticket_response.json()["id"]
+
+    comment = client.post(f"/tickets/{ticket_id}/comments", json={"body": "Fornecedor acionado.", "visibility": "residents"})
+    assert comment.status_code == 200
+    assert comment.json()["body"] == "Fornecedor acionado."
+
+    comments = client.get(f"/tickets/{ticket_id}/comments")
+    assert comments.status_code == 200
+    assert len(comments.json()) >= 1
+
+    assigned = client.patch(f"/tickets/{ticket_id}/assign", json={"assigned_to_user_id": 1})
+    assert assigned.status_code == 200
+

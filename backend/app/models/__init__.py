@@ -3,7 +3,7 @@ from app.models.audit import AuditEvent
 from app.models.content import Announcement, Document
 from app.models.finance import Agreement, Delinquency, Expense, Payment, Revenue
 from app.models.identity import Membership, User
-from app.models.operations import Ticket, WorkItem
+from app.models.operations import Ticket, TicketComment, WorkItem
 from app.models.property import Condominium, Resident, Unit
 from app.models.vendors import Quote, Vendor
 
@@ -22,6 +22,7 @@ __all__ = [
     "Resident",
     "Revenue",
     "Ticket",
+    "TicketComment",
     "Unit",
     "User",
     "Vendor",

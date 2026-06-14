@@ -25,6 +25,19 @@ class Ticket(Base, TimestampMixin):
     condominium: Mapped["Condominium"] = relationship(back_populates="tickets")
     unit: Mapped["Unit | None"] = relationship(back_populates="tickets")
     work_items: Mapped[list["WorkItem"]] = relationship(back_populates="ticket")
+    comments: Mapped[list["TicketComment"]] = relationship(back_populates="ticket")
+
+
+class TicketComment(Base, TimestampMixin):
+    __tablename__ = "ticket_comments"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    ticket_id: Mapped[int] = mapped_column(ForeignKey("tickets.id"), index=True)
+    author_user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), index=True)
+    body: Mapped[str] = mapped_column(Text)
+    visibility: Mapped[str] = mapped_column(String(40), default="managers")
+
+    ticket: Mapped["Ticket"] = relationship(back_populates="comments")
 
 
 class WorkItem(Base, TimestampMixin):
