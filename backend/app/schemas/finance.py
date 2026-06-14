@@ -1,6 +1,7 @@
 from decimal import Decimal
 
 from pydantic import BaseModel
+from decimal import Decimal
 
 
 class FinanceSummary(BaseModel):
@@ -20,4 +21,11 @@ class DelinquencyItem(BaseModel):
     status: str | None = None
 
     model_config = {"from_attributes": True}
+
+
+class DelinquencyUpdate(BaseModel):
+    amount_due: Decimal | None = None
+    days_late: int | None = None
+    status: str | None = None
+    risk: str | None = None
 

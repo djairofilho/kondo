@@ -16,12 +16,14 @@ def test_financial_crud_and_payment_flow() -> None:
     paid_revenue = client.patch(f"/revenues/{revenue_id}", json={"status": "paid"})
     assert paid_revenue.status_code == 200
     assert paid_revenue.json()["status"] == "paid"
+    assert client.get(f"/revenues/{revenue_id}").status_code == 200
 
     expense_response = client.post(
         "/expenses",
         json={"condominium_id": 1, "description": "Limpeza", "category": "operacional", "amount": "250.00"},
     )
     assert expense_response.status_code == 200
+    assert client.get(f"/expenses/{expense_response.json()['id']}").status_code == 200
 
     payment_response = client.post(
         "/payments",
@@ -29,6 +31,7 @@ def test_financial_crud_and_payment_flow() -> None:
     )
     assert payment_response.status_code == 200
     payment_id = payment_response.json()["id"]
+    assert client.get(f"/payments/{payment_id}").status_code == 200
 
     boleto_response = client.post(f"/payments/{payment_id}/generate-boleto")
     assert boleto_response.status_code == 200
@@ -37,6 +40,10 @@ def test_financial_crud_and_payment_flow() -> None:
     paid_response = client.post(f"/payments/{payment_id}/mark-paid")
     assert paid_response.status_code == 200
     assert paid_response.json()["status"] == "paid"
+
+    assert client.get("/finance/cashflow").status_code == 200
+    assert client.get("/finance/monthly-report").status_code == 200
+    assert client.post("/finance/insights-ai").status_code == 200
 
 
 def test_agreement_lifecycle() -> None:

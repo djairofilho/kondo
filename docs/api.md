@@ -251,6 +251,18 @@ Retorna resumo financeiro.
 }
 ```
 
+### `GET /finance/cashflow`
+
+Retorna fluxo de caixa agregado.
+
+### `GET /finance/monthly-report`
+
+Retorna relatorio mensal resumido.
+
+### `POST /finance/insights-ai`
+
+Gera insights financeiros simulados.
+
 ### `GET /revenues`
 
 Lista receitas persistidas.
@@ -258,6 +270,10 @@ Lista receitas persistidas.
 ### `POST /revenues`
 
 Cria receita.
+
+### `GET /revenues/{id}`
+
+Busca receita.
 
 ### `PATCH /revenues/{id}`
 
@@ -271,6 +287,10 @@ Lista despesas persistidas.
 
 Cria despesa.
 
+### `GET /expenses/{id}`
+
+Busca despesa.
+
 ### `PATCH /expenses/{id}`
 
 Atualiza despesa.
@@ -282,6 +302,10 @@ Lista pagamentos.
 ### `POST /payments`
 
 Cria pagamento.
+
+### `GET /payments/{id}`
+
+Busca pagamento.
 
 ### `PATCH /payments/{id}`
 
@@ -311,6 +335,14 @@ Lista unidades inadimplentes.
   }
 ]
 ```
+
+### `GET /delinquencies/{id}`
+
+Busca inadimplencia.
+
+### `PATCH /delinquencies/{id}`
+
+Atualiza inadimplencia.
 
 ## Acordos
 
