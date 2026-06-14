@@ -4,6 +4,7 @@ from datetime import date
 from decimal import Decimal
 from typing import Literal
 
+from fastapi import UploadFile
 from pydantic import BaseModel
 from sqlalchemy import func
 from sqlalchemy.orm import Session
@@ -23,7 +24,7 @@ from app.models import (
     Unit,
     User,
 )
-from app.schemas.ai_chat import AIChatAction, AIChatRequest, AIChatResponse, AIChatToolCall
+from app.schemas.ai_chat import AIChatAction, AIChatAttachmentRef, AIChatRequest, AIChatResponse, AIChatToolCall
 
 
 # ---------------------------------------------------------------------------
@@ -624,18 +625,24 @@ def _build_agent_with_tools(deps: KondoDeps):
 # Prompt builder — contexto sanitizado por perfil
 # ---------------------------------------------------------------------------
 
-def _build_prompt(payload: AIChatRequest, context: dict) -> str:
+def _build_prompt(payload: AIChatRequest, context: dict, file_descriptions: list[str] | None = None) -> str:
     profile = context["profile"]
-    # Morador nunca recebe dados financeiros no prompt, mesmo que o dict os contenha
     safe_context = {
         k: v for k, v in context.items()
         if not (k == "finance" and profile == "morador")
     }
-    return (
+    base = (
         f"Perfil ativo: {profile}\n"
         f"Rota atual: {payload.route or 'nao informada'}\n"
         f"Contexto operacional: {safe_context}\n"
         f"Mensagem do usuario: {payload.message}\n"
+    )
+    if file_descriptions:
+        files_note = "Arquivos enviados junto com esta mensagem:\n" + "\n".join(
+            f"- {desc}" for desc in file_descriptions
+        ) + "\n"
+        base = base + files_note
+    return base + (
         "Responda em ate 2 paragrafos objetivos. "
         "Preencha action_taken e entity_id corretamente no resultado estruturado."
     )
@@ -650,38 +657,52 @@ async def _run_anthropic_agent(
     context: dict,
     deps: KondoDeps,
     session: ChatSession,
+    file_parts: list[tuple[bytes, str]] | None = None,
 ) -> tuple[KondoAIResult, list[AIChatToolCall], str]:
-    """
-    Executa o agent com histórico nativo do pydantic-ai.
-    Retorna (result, tool_calls, messages_json_atualizado).
-    """
     from pydantic_ai.messages import ModelMessagesTypeAdapter
 
     settings = get_settings()
     agent = _build_agent_with_tools(deps)
-    prompt = _build_prompt(payload, context)
 
-    # Carrega histórico serializado da sessão
+    file_descriptions = [name for _, name in file_parts] if file_parts else None
+    prompt = _build_prompt(payload, context, file_descriptions)
+
     message_history = None
     if session.messages_json:
         try:
             message_history = ModelMessagesTypeAdapter.validate_json(session.messages_json)
         except Exception:
-            message_history = None  # corrompido → começa do zero
+            message_history = None
+
+    if file_parts:
+        from pydantic_ai.messages import BinaryContent
+        user_content: list = [prompt]
+        for raw_bytes, name in file_parts:
+            suffix = name.rsplit(".", 1)[-1].lower() if "." in name else ""
+            if suffix in {"jpg", "jpeg"}:
+                media_type = "image/jpeg"
+            elif suffix == "png":
+                media_type = "image/png"
+            elif suffix == "webp":
+                media_type = "image/webp"
+            else:
+                media_type = "application/pdf"
+            user_content.append(BinaryContent(data=raw_bytes, media_type=media_type))
+        run_input = user_content
+    else:
+        run_input = prompt
 
     run_kwargs: dict = {"deps": deps}
     if message_history:
         run_kwargs["message_history"] = message_history
 
     result = await asyncio.wait_for(
-        agent.run(prompt, **run_kwargs),
+        agent.run(run_input, **run_kwargs),
         timeout=settings.ai_timeout_seconds,
     )
 
-    # Serializa histórico completo atualizado
     updated_messages_json = result.all_messages_json().decode()
 
-    # Extrai tool calls do histórico de mensagens para o response
     tool_calls: list[AIChatToolCall] = []
     for msg in result.all_messages():
         if not hasattr(msg, "parts"):
@@ -694,7 +715,6 @@ async def _run_anthropic_agent(
                     summary=str(getattr(part, "args", ""))[:120],
                 ))
             elif part_type == "ToolReturnPart" and tool_calls:
-                # Substitui summary pelo retorno real da tool
                 tool_calls[-1] = AIChatToolCall(
                     tool=tool_calls[-1].tool,
                     summary=str(getattr(part, "content", ""))[:200],
@@ -791,7 +811,12 @@ def _mock_answer(payload: AIChatRequest, context: dict) -> str:
 # Entry point público
 # ---------------------------------------------------------------------------
 
-async def chat_with_kondo_ai(db: Session, current_user: User, payload: AIChatRequest) -> AIChatResponse:
+async def chat_with_kondo_ai(
+    db: Session,
+    current_user: User,
+    payload: AIChatRequest,
+    files: list[UploadFile] | None = None,
+) -> AIChatResponse:
     settings = get_settings()
     profile = _profile_for_user(db, current_user, payload.profile)
     context = _context_for_user(db, current_user, profile)
@@ -834,8 +859,44 @@ async def chat_with_kondo_ai(db: Session, current_user: User, payload: AIChatReq
                 user_id=current_user.id,
                 profile=profile,
             )
+
+            attachment_refs: list[AIChatAttachmentRef] = []
+            file_parts: list[tuple[bytes, str]] = []
+
+            if files:
+                from app.services.attachment_service import create_attachment
+
+                for upload in files:
+                    if not upload.filename and not upload.content_type:
+                        continue
+
+                    raw = await upload.read()
+                    if not raw:
+                        continue
+
+                    await upload.seek(0)
+
+                    attachment = await create_attachment(
+                        db,
+                        upload,
+                        condominium_id,
+                        "chat_message",
+                        session.id,
+                        current_user.id,
+                        "private",
+                    )
+                    attachment_refs.append(AIChatAttachmentRef(
+                        id=attachment.id,
+                        original_file_name=attachment.original_file_name,
+                        content_type=attachment.content_type,
+                        file_size=attachment.file_size,
+                        download_url=f"/attachments/{attachment.id}/download",
+                    ))
+                    file_parts.append((raw, attachment.original_file_name))
+
             ai_result, tool_calls, updated_json = await _run_anthropic_agent(
-                payload, context, deps, session
+                payload, context, deps, session,
+                file_parts=file_parts or None,
             )
             _save_session(db, session, updated_json, ai_result.answer)
 
@@ -843,6 +904,7 @@ async def chat_with_kondo_ai(db: Session, current_user: User, payload: AIChatReq
                 answer=ai_result.answer,
                 actions=actions,
                 tool_calls=tool_calls,
+                attachments=attachment_refs,
                 confidence="high" if tool_calls else "medium",
                 source="ai",
                 provider="anthropic",
@@ -863,6 +925,7 @@ async def chat_with_kondo_ai(db: Session, current_user: User, payload: AIChatReq
         answer=_mock_answer(payload, context),
         actions=actions,
         tool_calls=[],
+        attachments=[],
         confidence="medium" if context["tickets_total"] or context.get("finance") else "low",
         source="mock",
         provider=settings.ai_provider if can_use_anthropic else "mock",

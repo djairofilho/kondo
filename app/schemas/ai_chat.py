@@ -31,10 +31,19 @@ class AIChatToolCall(BaseModel):
     summary: str
 
 
+class AIChatAttachmentRef(BaseModel):
+    id: int
+    original_file_name: str
+    content_type: str
+    file_size: int
+    download_url: str
+
+
 class AIChatResponse(BaseModel):
     answer: str
     actions: list[AIChatAction] = Field(default_factory=list)
     tool_calls: list[AIChatToolCall] = Field(default_factory=list)
+    attachments: list[AIChatAttachmentRef] = Field(default_factory=list)
     confidence: Literal["low", "medium", "high"] = "medium"
     source: Literal["ai", "mock"] = "mock"
     provider: str = "mock"
