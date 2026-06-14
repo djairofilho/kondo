@@ -2,8 +2,8 @@
 
 ## Objetivo da demo
 
-Mostrar que o Kondo reduz administracao manual, aumenta transparencia e ajuda o
-sindico a tomar decisoes com IA.
+Mostrar que o Kondo reduz administracao manual, aumenta transparencia e melhora
+a experiencia de sindico, condominio/conselho e inquilino/morador.
 
 Tempo alvo: 3 a 5 minutos.
 
@@ -11,7 +11,7 @@ Tempo alvo: 3 a 5 minutos.
 
 > "Condominios pequenos e medios ainda funcionam com planilhas, mensagens
 > perdidas e pouca transparencia. O Kondo transforma essa operacao em uma
-> administradora digital AI-native."
+> plataforma AI-native para a vida em condominio."
 
 ## Dados simulados
 
@@ -24,6 +24,7 @@ Tempo alvo: 3 a 5 minutos.
 - Inadimplencia: 6 unidades.
 - Chamados abertos: 12.
 - Chamados criticos: 2.
+- Morador da unidade 304 abre chamado critico.
 
 ## Fluxo principal
 
@@ -66,7 +67,7 @@ Mensagem-chave:
 
 ### 4. Chamado critico
 
-Criar ou abrir chamado:
+Abrir a visao do morador e criar chamado:
 
 > "Vazamento forte na garagem B2 perto do quadro eletrico."
 
@@ -81,7 +82,20 @@ Mensagem-chave:
 
 > "A IA transforma uma reclamacao solta em acao operacional."
 
-### 5. Comunicado
+### 5. Transparencia para morador e conselho
+
+Mostrar o status do chamado:
+
+- recebido;
+- classificado como urgente;
+- fornecedor acionado;
+- area isolada.
+
+Mensagem-chave:
+
+> "O morador nao precisa cobrar no escuro, e o conselho enxerga a execucao."
+
+### 6. Comunicado
 
 Gerar comunicado:
 
@@ -95,7 +109,6 @@ Mensagem-chave:
 
 ## Fechamento
 
-> "Kondo comeca como painel de gestao transparente. Com dados de operacao,
-> inadimplencia e caixa, evolui para infraestrutura de credito para
-> condominios."
-
+> "Kondo comeca facilitando a vida do sindico, do condominio e do morador. Com
+> dados de operacao, inadimplencia e caixa, evolui para infraestrutura de
+> credito para condominios."

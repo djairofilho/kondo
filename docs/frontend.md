@@ -2,9 +2,10 @@
 
 ## Objetivo
 
-O frontend deve ser um painel web operacional para sindico, conselho e equipe de
-gestao. A primeira tela deve mostrar o estado do condominio e o que precisa de
-acao.
+O frontend deve ser uma plataforma web operacional para sindico,
+condominio/conselho e inquilino/morador. A experiencia do sindico deve comecar
+no dashboard de prioridades. A experiencia do morador deve comecar em
+autosservico: chamados, status, regras e comunicados.
 
 ## Stack
 
@@ -23,6 +24,7 @@ Telas principais:
 - Inadimplencia e acordos.
 - Documentos.
 - Comunicados.
+- Portal do morador.
 
 ## Dashboard
 
@@ -36,6 +38,24 @@ Deve exibir:
 - prioridades da IA.
 
 Essa tela e o centro da demo.
+
+## Portal do morador
+
+Funcionalidades:
+
+- abrir chamado da unidade;
+- acompanhar status;
+- consultar comunicados;
+- perguntar sobre regras do condominio;
+- acessar documentos permitidos;
+- visualizar manutencoes e avisos relevantes.
+
+Estados:
+
+- sem chamados abertos;
+- chamado aguardando analise;
+- chamado em execucao;
+- chamado resolvido.
 
 ## Chamados
 
@@ -90,7 +110,8 @@ Funcionalidades:
 
 ## Direcao visual
 
-Kondo deve parecer uma ferramenta de operacao, nao uma landing page. Priorizar:
+Kondo deve parecer uma ferramenta de operacao e autosservico, nao uma landing
+page. Priorizar:
 
 - layout limpo;
 - informacao escaneavel;
@@ -98,4 +119,3 @@ Kondo deve parecer uma ferramenta de operacao, nao uma landing page. Priorizar:
 - cores sobrias com alertas claros;
 - botoes com icones quando fizer sentido;
 - responsividade para notebook e mobile.
-

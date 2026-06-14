@@ -2,25 +2,32 @@
 
 ## One-liner
 
-Kondo e a administradora digital AI-native para condominios pequenos e medios.
+Kondo e a plataforma AI-native que facilita a vida do sindico, do condominio e
+do inquilino.
 
 ## Problema
 
 Condominios sao operados por processos manuais, pouca transparencia e sistemas
-fragmentados. Isso cria atraso em chamados, dificuldade de prestacao de contas,
-inadimplencia mal gerida e dependencia de administradoras tradicionais.
+fragmentados. O sindico fica sobrecarregado, o conselho perde visibilidade e o
+inquilino/morador nao sabe onde resolver demandas ou acompanhar status.
 
 ## Solucao
 
-Kondo centraliza a operacao do condominio em um painel web e usa IA para
-priorizar demandas, explicar financas, simular acordos, gerar comunicados e
-organizar documentos.
+Kondo centraliza a operacao do condominio em uma plataforma web e usa IA para
+priorizar demandas, explicar financas, simular acordos, gerar comunicados,
+organizar documentos e responder duvidas dos moradores.
+
+Ele cria tres experiencias conectadas:
+
+- sindico: controle, prioridades e automacao;
+- condominio/conselho: transparencia, governanca e auditoria;
+- inquilino/morador: autosservico, chamados, regras e status.
 
 ## Por que agora
 
 - IA permite automatizar tarefas administrativas repetitivas.
 - Condominios tem receitas recorrentes e dados financeiros estruturaveis.
-- Sindicos e moradores exigem mais transparencia.
+- Sindicos, conselhos e moradores exigem mais transparencia.
 - Condominios pequenos e medios buscam reduzir custo operacional.
 
 ## Mercado
@@ -35,7 +42,7 @@ Existem ERPs, apps de condominio e administradoras tradicionais. O Kondo se
 diferencia por nascer como administradora digital AI-native, com foco em:
 
 - autonomia para condominios pequenos e medios;
-- transparencia para moradores e conselho;
+- transparencia para moradores, inquilinos e conselho;
 - operacao guiada por IA;
 - dados preparados para credito futuro.
 
@@ -58,6 +65,7 @@ Fase futura:
 ### MVP
 
 - Dashboard.
+- Portal do morador/inquilino.
 - Chamados inteligentes.
 - Inadimplencia e simulacao de acordos.
 - Comunicados com IA.
@@ -81,6 +89,5 @@ Fase futura:
 
 ## Frase de fechamento
 
-> "Kondo transforma condominios de gestao manual e opaca em operacoes
-> transparentes, automatizadas e preparadas para credito."
-
+> "Kondo transforma a vida em condominio de manual e opaca em uma operacao
+> transparente, automatizada e preparada para credito."

@@ -26,6 +26,12 @@ Servicos de IA ficam atras de uma camada propria no backend. No MVP, essa camada
 pode retornar respostas simuladas. Depois, ela pode chamar OpenAI API ou outro
 provedor.
 
+O produto deve atender tres experiencias conectadas:
+
+- sindico: operacao, decisao e priorizacao;
+- condominio/conselho: governanca, transparencia e auditoria;
+- inquilino/morador: solicitacoes, status, regras e comunicados.
+
 ## Modulos principais
 
 - Dashboard: consolida metricas, alertas e prioridades.
@@ -35,6 +41,8 @@ provedor.
 - Documentos: armazena textos ou arquivos e habilita resumo/perguntas.
 - Comunicados: gera e registra avisos para moradores.
 - IA: classifica, resume, recomenda e gera textos.
+- Portal do morador: permite abrir chamados, acompanhar status e consultar
+  informacoes permitidas.
 
 ## Backend
 
@@ -49,7 +57,14 @@ rotas sempre que possivel:
 
 ## Frontend
 
-O frontend deve priorizar uma experiencia de painel operacional:
+O frontend deve priorizar uma experiencia de painel operacional, com visoes por
+perfil:
+
+- sindico: dashboard completo e acoes administrativas;
+- conselho: transparencia financeira, status de decisoes e auditoria;
+- morador: autosservico simples para demandas e regras.
+
+Diretrizes de interface:
 
 - navegacao lateral ou superior simples;
 - dashboard como primeira tela;
@@ -70,4 +85,3 @@ O Kondo deve preparar os dados para um futuro marketplace de credito condominial
 
 No MVP, o credito e roadmap. A concessao futura deve ser feita por parceiros
 regulados ou estrutura adequada.
-

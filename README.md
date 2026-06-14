@@ -1,16 +1,20 @@
 # Kondo
 
-Kondo e uma administradora digital AI-native para condominios pequenos e
-medios. O objetivo e reduzir administracao manual, aumentar transparencia para
-sindicos, conselho e moradores, e criar uma base de dados operacional que no
-futuro possa habilitar produtos financeiros para condominios.
+Kondo e uma plataforma AI-native para a vida em condominio. Ela facilita a
+rotina do sindico, aumenta a transparencia para o condominio e da ao
+inquilino/morador um canal simples para resolver problemas, acompanhar status e
+entender regras.
+
+O objetivo e reduzir administracao manual, aumentar confianca entre as partes e
+criar uma base de dados operacional que no futuro possa habilitar produtos
+financeiros para condominios.
 
 ## Problema
 
 Condominios ainda dependem de planilhas, PDFs, e-mails e processos manuais para
-chamados, prestacao de contas, inadimplencia, documentos e comunicados. Isso
-gera atraso, retrabalho, baixa transparencia e dependencia excessiva de
-administradoras tradicionais.
+chamados, prestacao de contas, inadimplencia, documentos e comunicados. Para o
+sindico, isso gera retrabalho. Para o condominio, gera baixa governanca. Para o
+inquilino ou morador, gera demora, duvida e falta de visibilidade.
 
 ## Solucao
 
@@ -21,6 +25,9 @@ O Kondo centraliza a operacao do condominio em um painel web e usa IA para:
 - simular acordos de inadimplencia;
 - gerar comunicados;
 - resumir documentos e responder perguntas sobre regras do condominio.
+
+Assim, o sindico ganha controle, o condominio ganha transparencia e o
+inquilino/morador ganha resolucao mais rapida.
 
 ## Stack
 
@@ -67,6 +74,7 @@ CORS_ORIGINS=http://localhost:5173
 ## Documentacao
 
 - [Produto](docs/product.md)
+- [Casos de Uso](docs/use-cases.md)
 - [Arquitetura](docs/architecture.md)
 - [Backend](docs/backend.md)
 - [API](docs/api.md)
@@ -75,4 +83,3 @@ CORS_ORIGINS=http://localhost:5173
 - [Frontend](docs/frontend.md)
 - [Roteiro de Demo](docs/demo-script.md)
 - [Pitch](docs/pitch.md)
-
