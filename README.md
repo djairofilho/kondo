@@ -45,7 +45,20 @@ backend/      # FastAPI + SQLAlchemy + Pydantic
 docs/         # documentacao de produto, tecnica, demo e pitch
 ```
 
-## Como rodar
+## Como executar localmente
+
+### Pre-requisitos
+
+- Node.js 24 ou superior.
+- npm.
+- Python 3.11 ou superior.
+- `uv` instalado.
+
+Se precisar instalar o `uv`, consulte a documentacao oficial:
+
+```txt
+https://docs.astral.sh/uv/
+```
 
 ### Frontend
 
@@ -55,13 +68,36 @@ npm install
 npm run dev
 ```
 
+O frontend roda em:
+
+```txt
+http://localhost:5173
+```
+
 ### Backend
 
 ```bash
 cd backend
-uv init
-uv add fastapi uvicorn sqlalchemy pydantic pydantic-settings
+uv sync
 uv run uvicorn app.main:app --reload
+```
+
+O backend roda em:
+
+```txt
+http://localhost:8000
+```
+
+Documentacao interativa da API:
+
+```txt
+http://localhost:8000/docs
+```
+
+Health check:
+
+```bash
+curl http://localhost:8000/health
 ```
 
 No desenvolvimento, use SQLite:
@@ -69,6 +105,24 @@ No desenvolvimento, use SQLite:
 ```env
 DATABASE_URL=sqlite:///./kondo.db
 CORS_ORIGINS=http://localhost:5173
+```
+
+### Rodar tudo
+
+Abra dois terminais:
+
+```bash
+# terminal 1
+cd backend
+uv sync
+uv run uvicorn app.main:app --reload
+```
+
+```bash
+# terminal 2
+cd frontend
+npm install
+npm run dev
 ```
 
 ## Documentacao
