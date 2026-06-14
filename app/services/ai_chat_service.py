@@ -710,8 +710,11 @@ async def _run_anthropic_agent(
         for part in msg.parts:
             part_type = type(part).__name__
             if part_type == "ToolCallPart":
+                tool_name = getattr(part, "tool_name", "desconhecida")
+                if tool_name == "final_result":
+                    continue
                 tool_calls.append(AIChatToolCall(
-                    tool=getattr(part, "tool_name", "desconhecida"),
+                    tool=tool_name,
                     summary=str(getattr(part, "args", ""))[:120],
                 ))
             elif part_type == "ToolReturnPart" and tool_calls:
@@ -720,7 +723,29 @@ async def _run_anthropic_agent(
                     summary=str(getattr(part, "content", ""))[:200],
                 )
 
-    return result.output, tool_calls, updated_messages_json
+    output = result.output
+    # O pydantic-ai usa uma tool interna chamada "final_result" para saída estruturada.
+    # O Haiku às vezes vaza o nome dessa tool ou o texto "Final result processed." no
+    # campo answer. Sanitizamos aqui antes de retornar ao frontend.
+    _ARTIFACTS = (
+        "final_result",
+        "Final result processed.",
+        "final_result\nFinal result processed.",
+    )
+    clean_answer = output.answer
+    for artifact in _ARTIFACTS:
+        clean_answer = clean_answer.replace(artifact, "")
+    clean_answer = clean_answer.strip()
+    if not clean_answer:
+        clean_answer = "Processado com sucesso."
+    if clean_answer != output.answer:
+        output = KondoAIResult(
+            answer=clean_answer,
+            action_taken=output.action_taken,
+            entity_id=output.entity_id,
+        )
+
+    return output, tool_calls, updated_messages_json
 
 
 # ---------------------------------------------------------------------------
