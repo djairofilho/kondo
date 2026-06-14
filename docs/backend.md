@@ -41,6 +41,7 @@ uv run uvicorn app.main:app --reload
 DATABASE_URL=sqlite:///./kondo.db
 CORS_ORIGINS=http://localhost:5173
 OPENAI_API_KEY=
+JWT_SECRET_KEY=dev-only-change-me
 ```
 
 O arquivo versionado `backend/.env.example` deve ser usado como base. O arquivo
@@ -61,12 +62,64 @@ backend/
     core/
       config.py
       database.py
+      deps.py
+      security.py
     models/
     schemas/
     routers/
     services/
+    seed.py
+  tests/
   pyproject.toml
 ```
+
+## Banco e seed
+
+A camada de banco fica em `app/core/database.py` e usa SQLAlchemy com
+`DATABASE_URL`. O SQLite e o padrao local para desenvolvimento rapido, mas os
+modelos devem continuar portaveis para Postgres.
+
+Criar tabelas e popular dados demo:
+
+```bash
+cd backend
+uv run python -m app.seed
+```
+
+O seed cria o Condominio Jardim Aurora com usuarios demo. A senha dos usuarios
+demo e:
+
+```txt
+kondo123
+```
+
+## Auth e permissoes
+
+O MVP usa JWT local e hash de senha com PBKDF2.
+
+Papeis:
+
+- `platform_admin`: admin interno da plataforma.
+- `manager`: sindico, sindico profissional ou gestor operacional.
+- `board_member`: conselho e governanca.
+- `resident`: morador, proprietario, inquilino ou ocupante.
+
+Nao existe login de condominio. Pessoas logam como `User` e recebem acesso por
+`Membership`.
+
+## Chamados e Kanban
+
+Chamados ja sao persistidos via SQLAlchemy. Ao criar um chamado, a API tambem
+cria um `WorkItem` para o Kanban operacional.
+
+Status padrao do Kanban:
+
+- `received`
+- `in_review`
+- `vendor_contacted`
+- `waiting_approval`
+- `in_progress`
+- `resolved`
 
 ## Regras de implementacao
 
@@ -75,6 +128,9 @@ backend/
 - Evitar recursos especificos de Postgres no MVP.
 - Manter respostas de IA atras de `services/ai_service.py`.
 - Permitir que o MVP rode sem chave de IA, usando respostas simuladas.
+- Documentar toda funcionalidade criada no mesmo PR.
+- Atualizar `docs/api.md` sempre que endpoints forem criados, alterados ou
+  removidos.
 
 ## SQLite agora, Postgres depois
 

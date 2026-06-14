@@ -147,5 +147,6 @@ npm run dev
 - [Modelo de Dados](docs/data-model.md)
 - [IA](docs/ai.md)
 - [Frontend](docs/frontend.md)
+- [Regras de Desenvolvimento](docs/development-rules.md)
 - [Roteiro de Demo](docs/demo-script.md)
 - [Pitch](docs/pitch.md)
