@@ -40,8 +40,7 @@ financeiros para condominios.
 ## Stack do backend
 
 - Backend: FastAPI, SQLAlchemy, Pydantic e `uv`.
-- Banco local: SQLite.
-- Banco futuro: PostgreSQL.
+- Banco dev: SQLite (sem Docker) ou PostgreSQL (Docker).
 - IA: servico abstrato no MVP, com possibilidade de plugar OpenAI API.
 
 ## Estrutura
@@ -57,7 +56,45 @@ pyproject.toml
 
 ## Como executar localmente
 
-### Pre-requisitos
+Existem duas formas de rodar o backend: **Docker** (PostgreSQL, zero configuracao) ou **local com SQLite** (mais rapido para iterar).
+
+---
+
+### Opcao 1 — Docker (recomendado)
+
+Pre-requisito: Docker e Docker Compose instalados.
+
+```bash
+cd kondo
+docker compose up --build
+```
+
+Isso sobe dois servicos:
+
+| Servico | URL |
+|---------|-----|
+| API (FastAPI) | `http://localhost:8000` |
+| PostgreSQL | `localhost:5432` |
+
+Na inicializacao, o container executa automaticamente:
+
+1. `alembic upgrade head` — aplica migrations
+2. `python -m app.seed` — popula o banco com dados demo
+3. `uvicorn` — sobe a API
+
+Nenhum comando adicional e necessario.
+
+Para parar e remover os volumes (limpa o banco):
+
+```bash
+docker compose down -v
+```
+
+---
+
+### Opcao 2 — Local com SQLite
+
+Pre-requisitos:
 
 - Python 3.11 ou superior.
 - `uv` instalado.
@@ -68,46 +105,39 @@ Se precisar instalar o `uv`, consulte a documentacao oficial:
 https://docs.astral.sh/uv/
 ```
 
-### Backend
-
 ```bash
 cp .env.example .env
 uv sync
 uv run uvicorn app.main:app --reload
 ```
 
-O backend roda em:
-
-```txt
-http://localhost:8000
-```
-
-Documentacao interativa da API:
-
-```txt
-http://localhost:8000/docs
-```
-
-Health check:
-
-```bash
-curl http://localhost:8000/health
-```
-
-No desenvolvimento, use SQLite:
+O `.env.example` ja vem configurado com SQLite por padrao:
 
 ```env
 DATABASE_URL=sqlite:///./kondo.db
-CORS_ORIGINS=http://localhost:5173
 ```
 
-Arquivos de ambiente versionados:
+Para usar PostgreSQL local (sem Docker), ajuste o `.env`:
 
-- `.env.example`: variaveis da API.
+```env
+DATABASE_URL=postgresql://kondo:kondo@localhost:5432/kondo
+```
 
-Arquivos `.env` reais nao devem ser commitados.
+Em ambos os modos, a API fica disponivel em:
 
-### Criar dados demo
+| Endpoint | URL |
+|----------|-----|
+| API | `http://localhost:8000` |
+| Swagger | `http://localhost:8000/docs` |
+| Health | `http://localhost:8000/health` |
+
+Arquivos `.env` reais nao devem ser commitados. Use `.env.example` como base.
+
+---
+
+### Dados demo
+
+O banco e populado automaticamente ao subir com Docker. Para rodar manualmente no modo local:
 
 ```bash
 uv run python -m app.seed
@@ -117,14 +147,16 @@ Condominio criado: **Condominio Jardim Aurora**.
 
 Usuarios demo (senha universal: `kondo123`):
 
-| Perfil       | E-mail                  | Papel              | Acesso                                              |
-|--------------|-------------------------|--------------------|-----------------------------------------------------|
-| Sindico      | `sindico@kondo.com`     | `manager`          | Completo: financeiro, chamados, comunicados, IA     |
-| Conselho     | `conselho@kondo.com`    | `board_member`     | Financeiro, documentos, comunicados, governanca     |
-| Morador      | `morador@kondo.com`     | `resident`         | Portal da unidade 304-A, chamados, boletos          |
-| Admin        | `admin@kondo.local`     | `platform_admin`   | Administracao da plataforma (nao aparece no front)  |
+| Perfil   | E-mail               | Papel            | Acesso                                          |
+|----------|----------------------|------------------|-------------------------------------------------|
+| Sindico  | `sindico@kondo.com`  | `manager`        | Completo: financeiro, chamados, comunicados, IA |
+| Conselho | `conselho@kondo.com` | `board_member`   | Financeiro, documentos, comunicados, governanca |
+| Morador  | `morador@kondo.com`  | `resident`       | Portal da unidade 804, chamados, boletos        |
+| Admin    | `admin@kondo.local`  | `platform_admin` | Administracao da plataforma                     |
 
-Para entrar no frontend, acesse `http://localhost:5173/login` e use um dos e-mails acima com a senha `kondo123`, ou clique nos atalhos de perfil demo na propria tela de login.
+Para entrar no frontend, acesse `http://localhost:5173/login` e use um dos e-mails acima com a senha `kondo123`.
+
+---
 
 ### Migrations
 
@@ -138,7 +170,9 @@ Gerar nova migration depois de alterar modelos:
 uv run alembic revision --autogenerate -m "describe change"
 ```
 
-### Rodar com o frontend
+---
+
+### Rodar com o frontend (modo local)
 
 ```bash
 cp .env.example .env
@@ -146,7 +180,7 @@ uv sync
 uv run uvicorn app.main:app --reload
 ```
 
-Em outro terminal, use o repositorio de frontend:
+Em outro terminal, no repositorio de frontend:
 
 ```bash
 cd ../kondo-front
