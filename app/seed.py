@@ -1,4 +1,4 @@
-from datetime import date
+from datetime import date, datetime
 from decimal import Decimal
 
 from sqlalchemy.orm import Session
@@ -8,6 +8,7 @@ from app.core.security import hash_password
 from app.models import (
     Agreement,
     Announcement,
+    CalendarEvent,
     Condominium,
     Delinquency,
     Document,
@@ -71,8 +72,10 @@ def seed_demo_data(db: Session) -> None:
         [
             Membership(user_id=manager.id, condominium_id=condominium.id, role="manager"),
             Membership(user_id=board.id, condominium_id=condominium.id, role="board_member"),
+            Membership(user_id=board.id, condominium_id=condominium.id, unit_id=unit_1202.id, role="resident"),
             Membership(user_id=resident_user.id, condominium_id=condominium.id, unit_id=unit_304.id, role="resident"),
             Resident(unit_id=unit_304.id, user_id=resident_user.id, name="Joao Morador", email="morador@kondo.com", resident_type="tenant"),
+            Resident(unit_id=unit_1202.id, user_id=board.id, name="Carlos Conselho", email="conselho@kondo.com", resident_type="owner"),
         ]
     )
 
@@ -115,6 +118,10 @@ def seed_demo_data(db: Session) -> None:
             Delinquency(unit_id=unit_304.id, amount_due=Decimal("1548.00"), days_late=63, risk="medium"),
             Agreement(unit_id=unit_304.id, entry_amount=Decimal("400.00"), installments=4, monthly_installment=Decimal("287.00")),
             Payment(condominium_id=condominium.id, unit_id=unit_304.id, amount=Decimal("516.00"), due_date=date(2026, 6, 10), payment_method="pix", status="pending", payment_metadata={"pix_code": "demo-pix-code"}),
+            Payment(condominium_id=condominium.id, unit_id=unit_1202.id, amount=Decimal("760.00"), due_date=date(2026, 6, 10), payment_method="pix", status="pending", payment_metadata={"pix_code": "demo-pix-code-1202"}),
+            CalendarEvent(condominium_id=condominium.id, title="Assembleia ordinaria", category="event", start_at=datetime(2026, 6, 24, 19, 30), location="Salao de festas", visibility="residents", status="scheduled"),
+            CalendarEvent(condominium_id=condominium.id, title="Manutencao preventiva dos elevadores", category="maintenance", start_at=datetime(2026, 6, 18, 9, 0), location="Bloco B", visibility="residents", status="scheduled"),
+            CalendarEvent(condominium_id=condominium.id, unit_id=unit_304.id, title="Reserva do salao", category="reservation", start_at=datetime(2026, 6, 28, 18, 0), location="Salao de festas", visibility="unit", status="scheduled"),
             Document(condominium_id=condominium.id, title="Regimento interno", document_type="rules", content="Obras com ruido devem ocorrer em dias uteis, em horario comercial.", visibility="residents"),
             Announcement(condominium_id=condominium.id, title="Manutencao emergencial", body="A garagem B2 ficara parcialmente isolada para reparo.", audience="residents", status="published"),
             Vendor(condominium_id=condominium.id, name="HidroService", category="hidraulica", phone="11999990000"),

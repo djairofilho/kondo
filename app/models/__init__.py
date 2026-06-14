@@ -1,5 +1,6 @@
 from app.models.attachments import Attachment
 from app.models.audit import AuditEvent
+from app.models.calendar import CalendarEvent
 from app.models.content import Announcement, Document
 from app.models.finance import Agreement, Delinquency, Expense, Payment, Revenue
 from app.models.identity import Membership, User
@@ -12,6 +13,7 @@ __all__ = [
     "Announcement",
     "Attachment",
     "AuditEvent",
+    "CalendarEvent",
     "Condominium",
     "Delinquency",
     "Document",

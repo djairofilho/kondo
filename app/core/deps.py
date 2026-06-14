@@ -112,15 +112,20 @@ def resolve_resident_portal_unit(
     if current_user.is_platform_admin:
         return get_unit_or_404(db, unit_id) if unit_id is not None else None
 
-    support_membership = get_active_membership(db, current_user, "manager", "board_member")
-    if support_membership is not None and unit_id is not None:
-        return ensure_unit_access(db, current_user, unit_id, "manager", "board_member")
+    manager_membership = get_active_membership(db, current_user, "manager")
+    if manager_membership is not None and unit_id is not None:
+        return ensure_unit_access(db, current_user, unit_id, "manager")
+
+    board_membership = get_active_membership(db, current_user, "board_member")
 
     resident_membership = get_active_membership(db, current_user, "resident")
     if resident_membership is None or resident_membership.unit_id is None:
-        if support_membership is not None:
+        if manager_membership is not None or board_membership is not None:
             return None
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Resident unit not found")
+
+    if board_membership is not None and unit_id is not None and unit_id != resident_membership.unit_id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Board member can only view own resident unit")
 
     return get_unit_or_404(db, resident_membership.unit_id)
 

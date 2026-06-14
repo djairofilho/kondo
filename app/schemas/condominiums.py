@@ -65,15 +65,58 @@ class ResidentCreate(BaseModel):
 class ResidentUpdate(BaseModel):
     name: str | None = None
     email: str | None = None
+    phone: str | None = None
+    emergency_contact: str | None = None
+    household_info: str | None = None
+    vehicles: str | None = None
+    pets: str | None = None
+    notification_preference: str | None = None
+    onboarding_completed: bool | None = None
+    onboarding_metadata: dict | None = None
     resident_type: str | None = None
     status: str | None = None
 
 
 class Resident(ResidentCreate):
     id: int
+    phone: str | None = None
+    emergency_contact: str | None = None
+    household_info: str | None = None
+    vehicles: str | None = None
+    pets: str | None = None
+    notification_preference: str | None = None
+    onboarding_completed: bool = False
+    onboarding_metadata: dict | None = None
     created_at: datetime
 
     model_config = {"from_attributes": True}
+
+
+class ResidentOnboarding(BaseModel):
+    unit_id: int
+    unit_number: str
+    unit_block: str | None = None
+    resident_name: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    emergency_contact: str | None = None
+    household_info: str | None = None
+    vehicles: str | None = None
+    pets: str | None = None
+    notification_preference: str | None = None
+    completed: bool = False
+
+
+class ResidentOnboardingUpdate(BaseModel):
+    resident_name: str | None = None
+    email: str | None = None
+    phone: str | None = None
+    emergency_contact: str | None = None
+    household_info: str | None = None
+    vehicles: str | None = None
+    pets: str | None = None
+    notification_preference: str | None = None
+    completed: bool = True
 
 
 class MembershipCreate(BaseModel):

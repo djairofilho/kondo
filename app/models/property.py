@@ -1,4 +1,5 @@
 from sqlalchemy import ForeignKey, String
+from sqlalchemy import JSON
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.core.database import Base
@@ -53,6 +54,14 @@ class Resident(Base, TimestampMixin):
     user_id: Mapped[int | None] = mapped_column(ForeignKey("users.id"), index=True)
     name: Mapped[str] = mapped_column(String(160))
     email: Mapped[str | None] = mapped_column(String(255))
+    phone: Mapped[str | None] = mapped_column(String(40))
+    emergency_contact: Mapped[str | None] = mapped_column(String(180))
+    household_info: Mapped[str | None] = mapped_column(String(500))
+    vehicles: Mapped[str | None] = mapped_column(String(500))
+    pets: Mapped[str | None] = mapped_column(String(500))
+    notification_preference: Mapped[str | None] = mapped_column(String(40))
+    onboarding_completed: Mapped[bool] = mapped_column(default=False)
+    onboarding_metadata: Mapped[dict | None] = mapped_column(JSON)
     resident_type: Mapped[str] = mapped_column(String(40), default="tenant")
     status: Mapped[str] = mapped_column(String(40), default="active")
 
