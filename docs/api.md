@@ -208,6 +208,31 @@ GET  /resident-portal/rules
 POST /resident-portal/rules/ask
 ```
 
+## Fornecedores, auditoria e IA
+
+```txt
+GET   /vendors
+POST  /vendors
+GET   /vendors/{vendor_id}
+PATCH /vendors/{vendor_id}
+
+GET  /quotes
+POST /quotes
+POST /quotes/compare-ai
+
+GET  /audit/events
+POST /audit/events
+
+POST /ai/priorities
+POST /ai/ticket-classification
+POST /ai/financial-insights
+POST /ai/agreement-recommendation
+POST /ai/announcement-generation
+POST /ai/document-summary/{document_id}
+POST /ai/document-question/{document_id}
+POST /ai/vendor-quote-comparison
+```
+
 ## Financeiro
 
 ### `GET /finance/summary`

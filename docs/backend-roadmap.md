@@ -231,8 +231,8 @@ GET  /kanban/items/{item_id}/attachments
 
 ### Conselho, morador, fornecedores e IA
 
-Status: conselho e morador implementados parcialmente; fornecedores e IA
-dedicada ainda planejados.
+Status: implementado para conselho, morador, fornecedores, auditoria e IA
+simulada.
 
 ```txt
 GET /board/overview
