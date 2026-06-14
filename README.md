@@ -143,6 +143,7 @@ npm run dev
 - [Casos de Uso](docs/use-cases.md)
 - [Arquitetura](docs/architecture.md)
 - [Backend](docs/backend.md)
+- [Roadmap do Backend](docs/backend-roadmap.md)
 - [API](docs/api.md)
 - [Modelo de Dados](docs/data-model.md)
 - [IA](docs/ai.md)
