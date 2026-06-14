@@ -21,6 +21,8 @@ Isso vale para:
 Antes de abrir um PR, validar:
 
 - O `README.md` foi atualizado se mudou setup, execucao ou env.
+- `docs/repository-split.md` foi atualizado se a divisao entre frontend e
+  backend mudou.
 - `docs/api.md` foi atualizado se endpoints mudaram.
 - `docs/data-model.md` foi atualizado se modelos ou relacoes mudaram.
 - `docs/backend.md` foi atualizado se arquitetura, comandos, banco, auth ou
@@ -28,6 +30,8 @@ Antes de abrir um PR, validar:
 - `docs/use-cases.md` foi atualizado se o fluxo de usuario mudou.
 - Testes foram adicionados ou atualizados quando houver comportamento novo.
 - Se modelos SQLAlchemy mudaram, migration Alembic foi criada ou atualizada.
+- Se a mudanca exigir ajuste visual ou de consumo da API, abrir ou referenciar
+  a alteracao correspondente em `../kondo-front`.
 
 ## Padrao de PR
 

@@ -2,20 +2,21 @@
 
 ## Visao geral
 
-O Kondo usa um monorepo simples com separacao direta entre frontend, backend e
-documentacao.
+O Kondo agora usa dois repositorios locais: um para frontend e outro para
+backend/documentacao.
 
 ```txt
-frontend/     # painel web em React + Vite + Tailwind
-backend/      # API em FastAPI + SQLAlchemy + Pydantic
-docs/         # produto, arquitetura, API, demo e pitch
+kondo-front/  # painel web em React + TanStack + Vite
+kondo/        # API FastAPI, banco, testes e documentacao
 ```
+
+Detalhes da decisao ficam em [Separacao de Repositorios](repository-split.md).
 
 ## Fluxo de dados
 
 ```txt
 Usuario
-  -> frontend React
+  -> frontend React em kondo-front
   -> backend FastAPI
   -> SQLAlchemy
   -> SQLite no desenvolvimento
@@ -59,8 +60,8 @@ rotas sempre que possivel:
 
 ## Frontend
 
-O frontend deve priorizar uma experiencia de painel operacional, com visoes por
-perfil:
+O frontend vive no repositorio irmao `../kondo-front` e deve priorizar uma
+experiencia de painel operacional, com visoes por perfil:
 
 - sindico: dashboard completo e acoes administrativas;
 - conselho: transparencia financeira, status de decisoes e auditoria;

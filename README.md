@@ -1,13 +1,10 @@
-# Kondo
+# Kondo Backend
 
-Kondo e uma plataforma AI-native para a vida em condominio. Ela facilita a
-rotina do sindico, aumenta a transparencia para o condominio e da ao
-inquilino/morador um canal simples para resolver problemas, acompanhar status e
-entender regras.
+Backend e documentacao tecnica/produto do Kondo.
 
-O objetivo e reduzir administracao manual, aumentar confianca entre as partes e
-criar uma base de dados operacional que no futuro possa habilitar produtos
-financeiros para condominios.
+O frontend web agora vive no repositorio irmao `../kondo-front`. Este
+repositorio deve ser usado apenas para API, banco, servicos de dominio,
+migrations, testes de backend e documentacao de contratos.
 
 ## Problema
 
@@ -29,9 +26,19 @@ O Kondo centraliza a operacao do condominio em um painel web e usa IA para:
 Assim, o sindico ganha controle, o condominio ganha transparencia e o
 inquilino/morador ganha resolucao mais rapida.
 
-## Stack
+## Produto
 
-- Frontend: React, Vite e Tailwind.
+Kondo e uma plataforma AI-native para a vida em condominio. Ela facilita a
+rotina do sindico, aumenta a transparencia para o condominio e da ao
+inquilino/morador um canal simples para resolver problemas, acompanhar status e
+entender regras.
+
+O objetivo e reduzir administracao manual, aumentar confianca entre as partes e
+criar uma base de dados operacional que no futuro possa habilitar produtos
+financeiros para condominios.
+
+## Stack do backend
+
 - Backend: FastAPI, SQLAlchemy, Pydantic e `uv`.
 - Banco local: SQLite.
 - Banco futuro: PostgreSQL.
@@ -40,7 +47,6 @@ inquilino/morador ganha resolucao mais rapida.
 ## Estrutura
 
 ```txt
-frontend/     # React + Vite + Tailwind
 backend/      # FastAPI + SQLAlchemy + Pydantic
 docs/         # documentacao de produto, tecnica, demo e pitch
 ```
@@ -49,8 +55,6 @@ docs/         # documentacao de produto, tecnica, demo e pitch
 
 ### Pre-requisitos
 
-- Node.js 24 ou superior.
-- npm.
 - Python 3.11 ou superior.
 - `uv` instalado.
 
@@ -58,21 +62,6 @@ Se precisar instalar o `uv`, consulte a documentacao oficial:
 
 ```txt
 https://docs.astral.sh/uv/
-```
-
-### Frontend
-
-```bash
-cd frontend
-cp .env.example .env
-npm install
-npm run dev
-```
-
-O frontend roda em:
-
-```txt
-http://localhost:5173
 ```
 
 ### Backend
@@ -111,30 +100,26 @@ CORS_ORIGINS=http://localhost:5173
 
 Arquivos de ambiente versionados:
 
-- `.env.example`: referencia geral do monorepo.
+- `.env.example`: referencia geral deste repositorio de backend.
 - `backend/.env.example`: variaveis da API.
-- `frontend/.env.example`: variaveis do app web.
 
 Arquivos `.env` reais nao devem ser commitados.
 
-### Rodar tudo
-
-Abra dois terminais:
+### Rodar com o frontend
 
 ```bash
-# terminal 1
 cd backend
 cp .env.example .env
 uv sync
 uv run uvicorn app.main:app --reload
 ```
 
+Em outro terminal, use o repositorio de frontend:
+
 ```bash
-# terminal 2
-cd frontend
-cp .env.example .env
-npm install
-npm run dev
+cd ../kondo-front
+bun install
+bun run dev
 ```
 
 ## Documentacao
@@ -142,6 +127,7 @@ npm run dev
 - [Produto](docs/product.md)
 - [Casos de Uso](docs/use-cases.md)
 - [Arquitetura](docs/architecture.md)
+- [Separacao de Repositorios](docs/repository-split.md)
 - [Backend](docs/backend.md)
 - [Roadmap do Backend](docs/backend-roadmap.md)
 - [Checklist de Revisao](docs/review-checklist.md)

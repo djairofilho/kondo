@@ -1,5 +1,9 @@
 # Frontend
 
+> O frontend nao vive mais neste repositorio. A implementacao atual fica em
+> `../kondo-front`. Este arquivo permanece aqui como guia de produto e contrato
+> visual para alinhar o backend, a demo e a evolucao das telas.
+
 ## Objetivo
 
 O frontend deve ser uma plataforma web operacional para sindico,
@@ -10,6 +14,7 @@ autosservico: chamados, status, regras e comunicados.
 ## Stack
 
 - React.
+- TanStack Start / Router.
 - Vite.
 - Tailwind.
 - Lucide React para icones.
