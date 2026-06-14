@@ -181,6 +181,50 @@ Retorna resumo financeiro.
 }
 ```
 
+### `GET /revenues`
+
+Lista receitas persistidas.
+
+### `POST /revenues`
+
+Cria receita.
+
+### `PATCH /revenues/{id}`
+
+Atualiza receita.
+
+### `GET /expenses`
+
+Lista despesas persistidas.
+
+### `POST /expenses`
+
+Cria despesa.
+
+### `PATCH /expenses/{id}`
+
+Atualiza despesa.
+
+### `GET /payments`
+
+Lista pagamentos.
+
+### `POST /payments`
+
+Cria pagamento.
+
+### `PATCH /payments/{id}`
+
+Atualiza pagamento.
+
+### `POST /payments/{id}/mark-paid`
+
+Marca pagamento como pago.
+
+### `POST /payments/{id}/generate-boleto`
+
+Gera metadados simulados de boleto no MVP.
+
 ## Inadimplencia
 
 ### `GET /delinquencies`
@@ -200,6 +244,22 @@ Lista unidades inadimplentes.
 
 ## Acordos
 
+### `GET /agreements`
+
+Lista acordos.
+
+### `POST /agreements`
+
+Cria acordo.
+
+### `GET /agreements/{id}`
+
+Busca acordo.
+
+### `PATCH /agreements/{id}`
+
+Atualiza acordo.
+
 ### `POST /agreements/simulate`
 
 Simula acordo e impacto no caixa.
@@ -212,6 +272,14 @@ Simula acordo e impacto no caixa.
   "installments": 4
 }
 ```
+
+### `POST /agreements/{id}/payments`
+
+Cria pagamento vinculado ao acordo.
+
+### `POST /agreements/{id}/cancel`
+
+Cancela acordo.
 
 Resposta:
 
