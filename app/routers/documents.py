@@ -10,6 +10,7 @@ from app.services.ai_service import answer_document_question, summarize_document
 from app.services.content_service import create_document, delete_document, get_document, list_documents, update_document
 from app.schemas.attachments import Attachment
 from app.services.attachment_service import create_attachment, get_attachment_or_404, list_attachments
+from app.services.document_rag_service import ingest_document_attachment
 from app.services.storage_service import storage_service
 
 
@@ -68,7 +69,12 @@ async def upload_document(
     current_user: User = Depends(require_roles("manager")),
     db: Session = Depends(get_db),
 ) -> Attachment:
-    return await create_attachment(db, file, condominium_id, "document", document_id, current_user.id, visibility)
+    document = get_document(db, document_id)
+    if document.condominium_id != condominium_id:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Document condominium mismatch")
+    attachment = await create_attachment(db, file, condominium_id, "document", document_id, current_user.id, visibility)
+    ingest_document_attachment(db, document_id, attachment)
+    return attachment
 
 
 @router.get("/{document_id}", response_model=DocumentSchema)
@@ -124,7 +130,7 @@ def summarize_document_route(
     db: Session = Depends(get_db),
 ) -> DocumentSummaryResponse:
     _ensure_document_access(db, current_user, document_id)
-    return summarize_document(document_id)
+    return summarize_document(db, document_id)
 
 
 @router.post("/{document_id}/ask", response_model=DocumentAnswerResponse)
@@ -135,5 +141,5 @@ def answer_document_question_route(
     db: Session = Depends(get_db),
 ) -> DocumentAnswerResponse:
     _ensure_document_access(db, current_user, document_id)
-    return answer_document_question(document_id, payload)
+    return answer_document_question(db, document_id, payload)
 

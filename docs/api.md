@@ -449,13 +449,17 @@ DELETE /documents/{document_id}
 POST   /documents/upload
 ```
 
+O upload de PDF vinculado a um documento extrai texto automaticamente e atualiza
+`content`, permitindo resumo e pergunta sobre o arquivo.
+
 ### `POST /documents/{id}/summarize`
 
-Resume um documento cadastrado.
+Resume um documento cadastrado usando o texto salvo em `content`, inclusive texto
+extraido de PDFs enviados.
 
 ### `POST /documents/{id}/ask`
 
-Responde pergunta com base no documento.
+Responde pergunta com base nos trechos mais relevantes do documento.
 
 ```json
 {

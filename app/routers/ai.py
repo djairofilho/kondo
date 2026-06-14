@@ -85,13 +85,17 @@ def ai_announcement_generation(payload: AnnouncementGenerationRequest) -> Announ
 
 
 @router.post("/document-summary/{document_id}", response_model=DocumentSummaryResponse, dependencies=[manager_or_board])
-def ai_document_summary(document_id: int) -> DocumentSummaryResponse:
-    return summarize_document(document_id)
+def ai_document_summary(document_id: int, db: Session = Depends(get_db)) -> DocumentSummaryResponse:
+    return summarize_document(db, document_id)
 
 
 @router.post("/document-question/{document_id}", response_model=DocumentAnswerResponse, dependencies=[manager_or_board])
-def ai_document_question(document_id: int, payload: DocumentAnswerRequest) -> DocumentAnswerResponse:
-    return answer_document_question(document_id, payload)
+def ai_document_question(
+    document_id: int,
+    payload: DocumentAnswerRequest,
+    db: Session = Depends(get_db),
+) -> DocumentAnswerResponse:
+    return answer_document_question(db, document_id, payload)
 
 
 @router.post("/vendor-quote-comparison", response_model=QuoteComparison, dependencies=[manager_or_board])

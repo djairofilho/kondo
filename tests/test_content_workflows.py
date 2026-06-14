@@ -12,7 +12,7 @@ def test_document_crud_and_ai_helpers(create_auth_context: Callable[[str, bool],
     create = client.post(
         "/documents",
         headers=manager["headers"],
-        json={"condominium_id": 1, "title": "Regimento Teste", "document_type": "rules", "content": "Obras somente em dias uteis.", "visibility": "residents"},
+        json={"condominium_id": manager["condominium_id"], "title": "Regimento Teste", "document_type": "rules", "content": "Obras somente em dias uteis.", "visibility": "residents"},
     )
     assert create.status_code == 200
     document_id = create.json()["id"]
@@ -23,14 +23,16 @@ def test_document_crud_and_ai_helpers(create_auth_context: Callable[[str, bool],
 
     summary = client.post(f"/documents/{document_id}/summarize", headers=manager["headers"])
     assert summary.status_code == 200
+    assert "Obras somente em dias uteis" in summary.json()["summary"]
 
     answer = client.post(f"/documents/{document_id}/ask", headers=manager["headers"], json={"question": "Pode obra no sabado?"})
     assert answer.status_code == 200
+    assert "Obras somente em dias uteis" in answer.json()["answer"]
 
     upload = client.post(
         "/documents/upload",
         headers=manager["headers"],
-        data={"condominium_id": "1", "document_id": str(document_id), "uploaded_by_user_id": "999999", "visibility": "managers"},
+        data={"condominium_id": str(manager["condominium_id"]), "document_id": str(document_id), "uploaded_by_user_id": "999999", "visibility": "managers"},
         files={"file": ("regimento.pdf", b"pdf", "application/pdf")},
     )
     assert upload.status_code == 200
@@ -54,7 +56,7 @@ def test_announcement_crud_publish_and_generation(create_auth_context: Callable[
     create = client.post(
         "/announcements",
         headers=manager["headers"],
-        json={"condominium_id": 1, "title": "Aviso", "body": "Manutencao hoje.", "audience": "residents"},
+        json={"condominium_id": manager["condominium_id"], "title": "Aviso", "body": "Manutencao hoje.", "audience": "residents"},
     )
     assert create.status_code == 200
     announcement_id = create.json()["id"]

@@ -493,8 +493,41 @@ def seed_demo_data(db: Session) -> None:
     )
 
     seed_documents = [
-        Document(condominium_id=condominium.id, title="Regimento interno", document_type="rules", content="Obras com ruido devem ocorrer em dias uteis, das 9h as 17h.", visibility="residents"),
+        Document(
+            condominium_id=condominium.id,
+            title="Regimento interno",
+            document_type="rules",
+            content=(
+                "Obras com ruido devem ocorrer em dias uteis, das 9h as 17h. "
+                "Aos sabados sao permitidos apenas reparos sem ruido, das 10h as 14h, "
+                "desde que comunicados previamente a administracao. Mudancas devem ser "
+                "agendadas com 48 horas de antecedencia e usar o elevador de servico."
+            ),
+            visibility="residents",
+        ),
         Document(condominium_id=condominium.id, title="Ata da assembleia de maio", document_type="minutes", content="Aprovada revisao da manutencao dos elevadores e fundo de reserva.", visibility="residents"),
+        Document(
+            condominium_id=condominium.id,
+            title="Regras de uso das areas comuns",
+            document_type="rules",
+            content=(
+                "Salao de festas, churrasqueira e espaco gourmet devem ser reservados pelo portal. "
+                "O horario de uso termina as 22h em dias de semana e as 23h aos sabados. "
+                "O morador responsavel deve entregar o espaco limpo e responder por danos."
+            ),
+            visibility="residents",
+        ),
+        Document(
+            condominium_id=condominium.id,
+            title="Politica de pets e convivencia",
+            document_type="rules",
+            content=(
+                "Pets devem circular nas areas comuns com guia. Animais de grande porte devem usar "
+                "elevador de servico quando disponivel. O tutor deve recolher residuos imediatamente "
+                "e evitar permanencia de pets na piscina, academia e salao de festas."
+            ),
+            visibility="residents",
+        ),
         Document(
             condominium_id=condominium.id,
             title="Boleto exemplo - unidade 804 - junho 2026",

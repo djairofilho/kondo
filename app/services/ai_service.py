@@ -1,6 +1,9 @@
 from app.schemas.announcements import AnnouncementGenerationRequest, AnnouncementGenerationResponse
 from app.schemas.documents import DocumentAnswerRequest, DocumentAnswerResponse, DocumentSummaryResponse
 from app.schemas.tickets import Ticket, TicketAIClassification
+from app.services.content_service import get_document
+from app.services.document_rag_service import answer_from_document, summarize_document_content
+from sqlalchemy.orm import Session
 
 
 def classify_ticket(ticket: Ticket) -> TicketAIClassification:
@@ -50,23 +53,23 @@ def generate_announcement(payload: AnnouncementGenerationRequest) -> Announcemen
     return AnnouncementGenerationResponse(title=title, body=body, tone=payload.tone)
 
 
-def summarize_document(document_id: int) -> DocumentSummaryResponse:
+def summarize_document(db: Session, document_id: int) -> DocumentSummaryResponse:
+    document = get_document(db, document_id)
+    summary = summarize_document_content(document)
+    if document.summary != summary:
+        document.summary = summary
+        db.commit()
+        db.refresh(document)
     return DocumentSummaryResponse(
         document_id=document_id,
-        title="Regimento interno",
-        summary=(
-            "O documento consolida regras de convivencia, horarios de obra, uso de areas comuns "
-            "e responsabilidades dos moradores."
-        ),
+        title=document.title,
+        summary=summary,
     )
 
 
-def answer_document_question(document_id: int, payload: DocumentAnswerRequest) -> DocumentAnswerResponse:
-    answer = (
-        "Segundo o regimento cadastrado, obras com ruido devem ocorrer em dias uteis, "
-        "em horario comercial. Aos sabados, apenas servicos sem ruido devem ser permitidos. "
-        "Confirme com o sindico em casos excepcionais."
-    )
+def answer_document_question(db: Session, document_id: int, payload: DocumentAnswerRequest) -> DocumentAnswerResponse:
+    document = get_document(db, document_id)
+    answer = answer_from_document(document, payload.question)
 
     return DocumentAnswerResponse(document_id=document_id, question=payload.question, answer=answer)
 

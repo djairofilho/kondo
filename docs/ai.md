@@ -124,13 +124,19 @@ Saida:
 Entrada:
 
 - conteudo de regimento, convencao, ata ou contrato;
+- texto extraido automaticamente de PDFs enviados em `/documents/upload`;
 - pergunta do usuario.
 
 Saida:
 
 - resposta em linguagem simples;
-- trecho ou referencia interna quando disponivel;
+- trechos recuperados do documento quando disponiveis;
 - aviso de que a resposta nao substitui orientacao juridica.
+
+No modo local, a leitura usa RAG lexical sobre o campo `Document.content`: o PDF
+e extraido, dividido em trechos e ranqueado pelos termos da pergunta. Se nenhum
+trecho relevante for encontrado, a API informa que nao encontrou base suficiente
+no documento em vez de inventar resposta.
 
 ## Evolucao
 
