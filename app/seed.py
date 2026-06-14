@@ -24,9 +24,28 @@ from app.models import (
 )
 
 
+def update_demo_login_emails(db: Session) -> None:
+    email_updates = {
+        "maria@kondo.local": "sindico@kondo.com",
+        "carlos@kondo.local": "conselho@kondo.com",
+        "joao@kondo.local": "morador@kondo.com",
+    }
+    for old_email, new_email in email_updates.items():
+        user = db.query(User).filter(User.email == old_email).first()
+        if user is not None:
+            user.email = new_email
+
+    resident = db.query(Resident).filter(Resident.email == "joao@kondo.local").first()
+    if resident is not None:
+        resident.email = "morador@kondo.com"
+
+    db.commit()
+
+
 def seed_demo_data(db: Session) -> None:
     existing = db.query(Condominium).filter(Condominium.name == "Condominio Jardim Aurora").first()
     if existing is not None:
+        update_demo_login_emails(db)
         return
 
     condominium = Condominium(
@@ -35,9 +54,9 @@ def seed_demo_data(db: Session) -> None:
         city="Sao Paulo",
         state="SP",
     )
-    manager = User(name="Maria Sindica", email="maria@kondo.local", password_hash=hash_password("kondo123"))
-    board = User(name="Carlos Conselho", email="carlos@kondo.local", password_hash=hash_password("kondo123"))
-    resident_user = User(name="Joao Morador", email="joao@kondo.local", password_hash=hash_password("kondo123"))
+    manager = User(name="Maria Sindica", email="sindico@kondo.com", password_hash=hash_password("kondo123"))
+    board = User(name="Carlos Conselho", email="conselho@kondo.com", password_hash=hash_password("kondo123"))
+    resident_user = User(name="Joao Morador", email="morador@kondo.com", password_hash=hash_password("kondo123"))
     admin_user = User(name="Admin Kondo", email="admin@kondo.local", password_hash=hash_password("kondo123"), is_platform_admin=True)
 
     db.add_all([condominium, manager, board, resident_user, admin_user])
@@ -53,7 +72,7 @@ def seed_demo_data(db: Session) -> None:
             Membership(user_id=manager.id, condominium_id=condominium.id, role="manager"),
             Membership(user_id=board.id, condominium_id=condominium.id, role="board_member"),
             Membership(user_id=resident_user.id, condominium_id=condominium.id, unit_id=unit_304.id, role="resident"),
-            Resident(unit_id=unit_304.id, user_id=resident_user.id, name="Joao Morador", email="joao@kondo.local", resident_type="tenant"),
+            Resident(unit_id=unit_304.id, user_id=resident_user.id, name="Joao Morador", email="morador@kondo.com", resident_type="tenant"),
         ]
     )
 

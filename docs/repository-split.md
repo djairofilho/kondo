@@ -43,7 +43,7 @@ evolucao visual deve acontecer em `../kondo-front`.
 - Endpoints e payloads ficam documentados em `kondo/docs/api.md`.
 - Mudancas de contrato devem atualizar o backend e sinalizar o impacto no
   frontend.
-- O backend deve manter CORS liberado para `http://localhost:5173` em
+- O backend deve manter CORS liberado para `http://localhost:5173`, `http://127.0.0.1:5173`, `http://localhost:8080` e `http://127.0.0.1:8080` em
   desenvolvimento.
 
 ## Comandos locais

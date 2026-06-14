@@ -30,7 +30,7 @@ Cria usuario e retorna tokens.
 ```json
 {
   "name": "Maria Sindica",
-  "email": "maria@kondo.local",
+  "email": "sindico@kondo.com",
   "password": "kondo123"
 }
 ```
@@ -41,7 +41,7 @@ Autentica usuario.
 
 ```json
 {
-  "email": "maria@kondo.local",
+  "email": "sindico@kondo.com",
   "password": "kondo123"
 }
 ```
