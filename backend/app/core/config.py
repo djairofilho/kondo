@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     app_name: str = "Kondo API"
     database_url: str = "sqlite:///./kondo.db"
     cors_origins: str = "http://localhost:5173"
+    openai_api_key: str | None = None
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
