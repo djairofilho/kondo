@@ -319,3 +319,40 @@ Responde pergunta com base no documento.
   "question": "Pode fazer obra no sabado?"
 }
 ```
+
+## Anexos
+
+### `POST /attachments`
+
+Cria anexo generico usando `multipart/form-data`.
+
+Campos:
+
+- `file`
+- `condominium_id`
+- `entity_type`
+- `entity_id`
+- `visibility`
+
+### `GET /attachments/{id}`
+
+Busca metadados do anexo.
+
+### `GET /attachments/{id}/download`
+
+Baixa o arquivo pelo backend, sem expor a pasta local diretamente.
+
+### `DELETE /attachments/{id}`
+
+Remove metadados e arquivo local.
+
+### Atalhos
+
+```txt
+POST /tickets/{ticket_id}/attachments
+GET  /tickets/{ticket_id}/attachments
+POST /payments/{payment_id}/attachments
+GET  /payments/{payment_id}/attachments
+POST /kanban/items/{item_id}/attachments
+GET  /kanban/items/{item_id}/attachments
+```

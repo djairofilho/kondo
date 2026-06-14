@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.core.config import get_settings
 from app.core.database import init_db
-from app.routers import agreements, announcements, auth, dashboard, documents, finance, kanban, tickets
+from app.routers import agreements, announcements, attachments, auth, dashboard, documents, finance, kanban, tickets
 
 
 settings = get_settings()
@@ -46,4 +46,5 @@ app.include_router(finance.router)
 app.include_router(agreements.router)
 app.include_router(announcements.router)
 app.include_router(documents.router)
+app.include_router(attachments.router)
 

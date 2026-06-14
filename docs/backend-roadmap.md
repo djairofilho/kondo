@@ -66,7 +66,7 @@ Ainda falta:
 
 ### 5. Anexos e storage local
 
-Status: planejado.
+Status: implementado.
 
 - Criar `storage_service.py`.
 - Implementar `LocalStorageService`.
