@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.deps import require_roles
 from app.schemas.announcements import AnnouncementGenerationRequest, AnnouncementGenerationResponse
 from app.schemas.documents import DocumentAnswerRequest, DocumentAnswerResponse, DocumentSummaryResponse
 from app.schemas.tickets import TicketAIClassification, TicketCreate
@@ -13,7 +14,7 @@ from app.services.ticket_service import create_ticket
 from app.services.vendor_service import compare_quotes
 
 
-router = APIRouter(prefix="/ai", tags=["ai"])
+router = APIRouter(prefix="/ai", tags=["ai"], dependencies=[Depends(require_roles("manager", "board_member"))])
 
 
 @router.post("/priorities")
