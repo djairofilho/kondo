@@ -102,6 +102,8 @@ GET  /admin/audit-events
 
 ### Condominios, unidades e pessoas
 
+Status: implementado.
+
 ```txt
 GET   /condominiums
 POST  /condominiums
