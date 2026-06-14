@@ -1,0 +1,23 @@
+[project]
+name = "kondo-api"
+version = "0.1.0"
+description = "FastAPI backend for Kondo condominium operations platform"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.124.0",
+  "pydantic>=2.12.0",
+  "pydantic-settings>=2.12.0",
+  "sqlalchemy>=2.0.0",
+  "uvicorn[standard]>=0.38.0",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=9.0.0",
+  "httpx>=0.28.0",
+]
+
+[tool.uv]
+package = false
+
