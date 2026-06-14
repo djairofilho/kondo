@@ -38,8 +38,9 @@ def seed_demo_data(db: Session) -> None:
     manager = User(name="Maria Sindica", email="maria@kondo.local", password_hash=hash_password("kondo123"))
     board = User(name="Carlos Conselho", email="carlos@kondo.local", password_hash=hash_password("kondo123"))
     resident_user = User(name="Joao Morador", email="joao@kondo.local", password_hash=hash_password("kondo123"))
+    admin_user = User(name="Admin Kondo", email="admin@kondo.local", password_hash=hash_password("kondo123"), is_platform_admin=True)
 
-    db.add_all([condominium, manager, board, resident_user])
+    db.add_all([condominium, manager, board, resident_user, admin_user])
     db.flush()
 
     unit_304 = Unit(condominium_id=condominium.id, number="304", block="A")
