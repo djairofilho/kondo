@@ -12,10 +12,28 @@ class TicketAIClassification(BaseModel):
 
 
 class TicketCreate(BaseModel):
+    condominium_id: int = 1
     unit_id: int
     title: str = Field(min_length=3)
     description: str = Field(min_length=5)
     location: str = Field(min_length=2)
+
+
+class TicketUpdate(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    location: str | None = None
+    status: str | None = None
+    category: str | None = None
+    priority: str | None = None
+
+
+class TicketStatusUpdate(BaseModel):
+    status: str
+
+
+class TicketAssign(BaseModel):
+    assigned_to_user_id: int | None = None
 
 
 class Ticket(TicketCreate):
@@ -23,6 +41,8 @@ class Ticket(TicketCreate):
     status: str
     category: str | None = None
     priority: str | None = None
-    ai_analysis: TicketAIClassification | None = None
+    ai_analysis: dict | None = None
     created_at: datetime
+
+    model_config = {"from_attributes": True}
 

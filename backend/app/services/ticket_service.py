@@ -1,67 +1,82 @@
-from datetime import datetime, timezone
+from fastapi import HTTPException, status
+from sqlalchemy.orm import Session
 
-from app.schemas.tickets import Ticket, TicketAIClassification, TicketCreate
-
-
-_tickets: list[Ticket] = [
-    Ticket(
-        id=1,
-        unit_id=304,
-        title="Vazamento na garagem",
-        description="Vazamento forte na garagem B2 perto do quadro eletrico.",
-        location="Garagem B2",
-        status="recebido",
-        category="hidraulica",
-        priority="alta",
-        ai_analysis=TicketAIClassification(
-            category="hidraulica",
-            priority="alta",
-            risk="risco eletrico",
-            suggested_owner="zelador e fornecedor hidraulico",
-            next_action="Isolar a area e acionar fornecedor imediatamente.",
-        ),
-        created_at=datetime.now(timezone.utc),
-    ),
-    Ticket(
-        id=2,
-        unit_id=1202,
-        title="Lampada queimada",
-        description="Lampada queimada no corredor do 12 andar.",
-        location="12 andar",
-        status="em analise",
-        created_at=datetime.now(timezone.utc),
-    ),
-]
+from app.models import Ticket as TicketModel
+from app.models import WorkItem
+from app.schemas.tickets import TicketAIClassification, TicketCreate, TicketStatusUpdate, TicketUpdate
 
 
-def list_tickets() -> list[Ticket]:
-    return _tickets
+def list_tickets(db: Session) -> list[TicketModel]:
+    return db.query(TicketModel).order_by(TicketModel.created_at.desc()).all()
 
 
-def get_ticket(ticket_id: int) -> Ticket | None:
-    return next((ticket for ticket in _tickets if ticket.id == ticket_id), None)
+def get_ticket(db: Session, ticket_id: int) -> TicketModel | None:
+    return db.get(TicketModel, ticket_id)
 
 
-def create_ticket(payload: TicketCreate) -> Ticket:
-    ticket = Ticket(
-        id=max((ticket.id for ticket in _tickets), default=0) + 1,
+def get_ticket_or_404(db: Session, ticket_id: int) -> TicketModel:
+    ticket = get_ticket(db, ticket_id)
+    if ticket is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Ticket not found")
+    return ticket
+
+
+def create_ticket(db: Session, payload: TicketCreate) -> TicketModel:
+    ticket = TicketModel(
+        condominium_id=payload.condominium_id,
         unit_id=payload.unit_id,
         title=payload.title,
         description=payload.description,
         location=payload.location,
-        status="recebido",
-        created_at=datetime.now(timezone.utc),
+        status="received",
     )
-    _tickets.append(ticket)
+    db.add(ticket)
+    db.flush()
+
+    db.add(
+        WorkItem(
+            condominium_id=payload.condominium_id,
+            ticket_id=ticket.id,
+            type="ticket",
+            title=payload.title,
+            description=payload.description,
+            status="received",
+            priority="medium",
+            source_type="ticket",
+            source_id=ticket.id,
+        )
+    )
+    db.commit()
+    db.refresh(ticket)
     return ticket
 
 
-def update_ticket_ai_analysis(ticket_id: int, classification: TicketAIClassification) -> None:
-    ticket = get_ticket(ticket_id)
-    if ticket is None:
-        return
+def update_ticket(db: Session, ticket_id: int, payload: TicketUpdate) -> TicketModel:
+    ticket = get_ticket_or_404(db, ticket_id)
+    for field, value in payload.model_dump(exclude_unset=True).items():
+        setattr(ticket, field, value)
+    db.commit()
+    db.refresh(ticket)
+    return ticket
 
-    ticket.ai_analysis = classification
+
+def update_ticket_status(db: Session, ticket_id: int, payload: TicketStatusUpdate) -> TicketModel:
+    ticket = get_ticket_or_404(db, ticket_id)
+    ticket.status = payload.status
+    for item in ticket.work_items:
+        item.status = payload.status
+    db.commit()
+    db.refresh(ticket)
+    return ticket
+
+
+def update_ticket_ai_analysis(db: Session, ticket_id: int, classification: TicketAIClassification) -> None:
+    ticket = get_ticket_or_404(db, ticket_id)
+
+    ticket.ai_analysis = classification.model_dump()
     ticket.category = classification.category
     ticket.priority = classification.priority
+    for item in ticket.work_items:
+        item.priority = "high" if classification.priority == "alta" else "medium"
+    db.commit()
 

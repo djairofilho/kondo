@@ -1,0 +1,52 @@
+from fastapi.testclient import TestClient
+
+from app.main import app
+
+
+def test_ticket_creation_creates_kanban_item_and_can_move() -> None:
+    client = TestClient(app)
+
+    ticket_response = client.post(
+        "/tickets",
+        json={
+            "condominium_id": 1,
+            "unit_id": 304,
+            "title": "Portao travando",
+            "description": "Portao da garagem esta travando ao abrir.",
+            "location": "Garagem",
+        },
+    )
+    assert ticket_response.status_code == 201
+    ticket = ticket_response.json()
+    assert ticket["status"] == "received"
+
+    kanban_response = client.get("/kanban")
+    assert kanban_response.status_code == 200
+    items = kanban_response.json()
+    item = next(row for row in items if row["ticket_id"] == ticket["id"])
+
+    move_response = client.patch(f"/kanban/items/{item['id']}/move", json={"status": "in_progress"})
+    assert move_response.status_code == 200
+    assert move_response.json()["status"] == "in_progress"
+
+
+def test_ticket_status_update_moves_related_work_items() -> None:
+    client = TestClient(app)
+
+    ticket_response = client.post(
+        "/tickets",
+        json={
+            "condominium_id": 1,
+            "unit_id": 304,
+            "title": "Luz do corredor",
+            "description": "Luz do corredor do terceiro andar esta piscando.",
+            "location": "3 andar",
+        },
+    )
+    ticket_id = ticket_response.json()["id"]
+
+    response = client.patch(f"/tickets/{ticket_id}/status", json={"status": "resolved"})
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "resolved"
+
