@@ -43,6 +43,8 @@ O produto deve atender tres experiencias conectadas:
 - IA: classifica, resume, recomenda e gera textos.
 - Portal do morador: permite abrir chamados, acompanhar status e consultar
   informacoes permitidas.
+- WhatsApp futuro: captura reclamacoes e fotos por conversa, normaliza mensagens
+  e cria chamados estruturados sem substituir o portal.
 
 ## Backend
 
@@ -85,3 +87,13 @@ O Kondo deve preparar os dados para um futuro marketplace de credito condominial
 
 No MVP, o credito e roadmap. A concessao futura deve ser feita por parceiros
 regulados ou estrutura adequada.
+
+## Evolucao para WhatsApp
+
+A integracao com WhatsApp deve entrar como camada de entrada e notificacao, nao
+como fonte oficial de dados. O fluxo recomendado e receber mensagem, normalizar
+conteudo, classificar com IA, criar ou atualizar chamado e devolver respostas
+curtas ao morador.
+
+Detalhamento de conversa, escopo e arquitetura futura:
+[WhatsApp](whatsapp.md).

@@ -112,6 +112,16 @@ O morador acessa regras, comunicados, documentos permitidos e chamados da sua
 unidade. Ele pode abrir uma solicitacao, acompanhar status e entender o que esta
 sendo feito.
 
+### WhatsApp como entrada rapida futura
+
+O WhatsApp deve ser usado como canal futuro para reclamacoes e solicitacoes
+rapidas. O morador envia uma mensagem ou foto, e o Kondo transforma a conversa
+em chamado estruturado, com protocolo, classificacao de IA e acompanhamento de
+status.
+
+No MVP atual, o foco permanece no site. A integracao real com WhatsApp fica como
+roadmap, documentada em [WhatsApp](whatsapp.md).
+
 ### Transparencia para conselho e condominio
 
 O conselho acompanha despesas, inadimplencia, orcamentos, obras e decisoes de

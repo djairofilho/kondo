@@ -21,6 +21,7 @@ services/ai_service.py
 Responsabilidades:
 
 - classificar chamados;
+- transformar mensagens de WhatsApp em chamados estruturados no futuro;
 - gerar comunicados;
 - resumir documentos;
 - responder perguntas sobre documentos;
@@ -45,6 +46,31 @@ Saida:
 - risco;
 - responsavel sugerido;
 - proxima acao.
+
+### Entrada assistida por WhatsApp
+
+Entrada futura:
+
+- texto livre enviado pelo morador;
+- foto ou video;
+- numero do remetente;
+- condominio identificado;
+- contexto curto da conversa.
+
+Saida:
+
+- intencao;
+- resumo do problema;
+- dados faltantes;
+- categoria;
+- prioridade;
+- risco;
+- local;
+- resposta sugerida ao morador;
+- dados para criar ou atualizar chamado.
+
+Essa IA deve ser restrita a abertura e acompanhamento de chamados. Ela nao deve
+aprovar gastos, assumir prazos sem confirmacao ou expor informacoes sensiveis.
 
 ### Resumo financeiro
 
@@ -111,4 +137,3 @@ Saida:
 Quando houver chave de IA configurada, o backend pode usar OpenAI API. Sem chave,
 deve cair para simulacao. Essa decisao permite demo confiavel e evita quebrar o
 fluxo do hackathon.
-

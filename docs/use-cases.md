@@ -144,3 +144,24 @@ financeiro de condominios.
 **Resultado esperado:** credito mais contextualizado, com menor custo de analise
 e melhor precificacao de risco.
 
+## 9. Morador abre reclamacao pelo WhatsApp
+
+**Usuario:** inquilino, morador ou ocupante.
+
+**Problema:** muitas reclamacoes chegam em conversas soltas, sem protocolo,
+prioridade, historico ou visibilidade para o sindico.
+
+**Fluxo futuro:**
+
+1. Morador envia mensagem pelo WhatsApp.
+2. IA entende o problema, identifica dados faltantes e pede foto quando util.
+3. Kondo classifica categoria, prioridade, risco e local.
+4. Sistema cria chamado e anexa midias recebidas.
+5. Morador recebe protocolo pelo WhatsApp.
+6. Chamado aparece no Kanban do sindico.
+7. Mudancas de status sao enviadas ao morador e ficam registradas no portal.
+
+**Resultado esperado:** o morador usa um canal familiar, enquanto o condominio
+ganha processo, rastreabilidade e menos perda de informacao.
+
+Detalhamento completo: [WhatsApp](whatsapp.md).
