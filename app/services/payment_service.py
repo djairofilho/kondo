@@ -147,7 +147,6 @@ def generate_component_boleto(db: Session, payment_id: int, component: str) -> P
     entity.payment_method = "boleto"
     entity.payment_metadata = metadata
     flag_modified(entity, "payment_metadata")
-    flag_modified(entity, "payment_metadata")
     db.commit()
     db.refresh(entity)
     return entity

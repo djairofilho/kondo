@@ -268,7 +268,7 @@ def seed_demo_data(db: Session) -> None:
 
     months = [(2026, month) for month in range(1, 7)]
     overdue_current_units = {"304", "804", "1103", "1402", "1604"}
-    pending_current_units = {"202", "707", "901", "1301", "1503"}
+    pending_current_units = {"202", "704", "901", "1301", "1503"}
     water_gas_included_units = {number for number in units if int(number[:-2]) <= 4}
 
     for year, month in months:
@@ -365,7 +365,7 @@ def seed_demo_data(db: Session) -> None:
     ticket_specs = [
         ("Vazamento no hall", "hidraulica", "alta", "in_review", "304"),
         ("Barulho no motor do elevador social", "elevadores", "critica", "vendor_contacted", "1202"),
-        ("Lampada queimada na garagem", "eletrica", "media", "received", "707"),
+        ("Lampada queimada na garagem", "eletrica", "media", "received", "704"),
         ("Portao social travando", "seguranca", "alta", "in_progress", "901"),
         ("Infiltracao na parede da escada", "manutencao", "alta", "waiting_approval", "1402"),
         ("Reserva do salao sem confirmacao", "operacional", "baixa", "resolved", "804"),

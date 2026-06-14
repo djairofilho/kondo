@@ -115,7 +115,7 @@ def test_agreement_lifecycle(create_auth_context: Callable[[str, bool], dict]) -
         "/agreements",
         headers=manager["headers"],
         json={
-            "unit_id": 1,
+            "unit_id": manager["unit_id"],
             "entry_amount": "400.00",
             "installments": 4,
             "monthly_installment": "287.00",
