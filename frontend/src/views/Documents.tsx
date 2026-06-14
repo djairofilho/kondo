@@ -1,99 +1,123 @@
-import { BotMessageSquare, Search, ShieldCheck } from "lucide-react"
-import { useEffect, useState } from "react"
+import { Bot, Download, ExternalLink, FileUp, Gavel, MoreVertical, Search, ShieldCheck } from "lucide-react"
+import { useState } from "react"
+
+import { Badge } from "../components/Badge"
 import { Card } from "../components/Card"
 import { SectionHeader } from "../components/SectionHeader"
-import { askDocumentQuestion, listDocuments } from "../services/mockApi"
-import type { DocumentItem } from "../data/documents"
+
+const docs = [
+  ["Regimento Interno 2023", "Regras", "Vigente", "15/08/2023", "Regras de convivencia e areas comuns."],
+  ["Ata Assembleia Marco", "Ata", "Registrado", "10/03/2023", "Aprovacao de contas e previsao orcamentaria."],
+  ["Convencao Condominial", "Legal", "Vigente", "05/01/2015", "Normas juridicas e deveres do condominio."],
+  ["Apolice de Seguro", "Seguro", "Renovacao Pendente", "20/01/2024", "Cobertura patrimonial e civil."],
+]
 
 export function Documents() {
-  const [documents, setDocuments] = useState<DocumentItem[]>([])
-  const [question, setQuestion] = useState("Pode fazer obra com barulho?")
-  const [answer, setAnswer] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [source, setSource] = useState<string>("")
-  const [selectedDoc, setSelectedDoc] = useState<number | null>(null)
-
-  useEffect(() => {
-    let active = true
-    listDocuments().then((payload) => {
-      if (!active) return
-      setDocuments(payload)
-      setSelectedDoc(payload[0]?.id ?? null)
-      setLoading(false)
-    })
-    return () => {
-      active = false
-    }
-  }, [])
-
-  async function ask() {
-    if (!question.trim()) return
-    const result = await askDocumentQuestion({ question, document_id: selectedDoc ?? undefined })
-    setSource(result.source)
-    setAnswer(result.answer)
-  }
+  const [question, setQuestion] = useState("Pode usar churrasqueira depois das 22h?")
+  const [asked, setAsked] = useState(true)
 
   return (
     <div className="view-stack">
       <SectionHeader
         title="Documentos"
-        description="Regras, atas e contratos com consulta por IA e rastreabilidade de evidência."
+        description="Gestao e consulta inteligente de arquivos do condominio."
+        action={
+          <button className="btn btn-primary" type="button">
+            <FileUp size={16} />
+            Enviar Documento
+          </button>
+        }
       />
 
-      <div className="grid-2">
-        <Card title="Documentos do condomínio" subtitle="Base normativa operacional">
-          <div className="documents-list">
-            {loading ? (
-              <p className="muted">Carregando...</p>
-            ) : (
-              documents.map((doc) => (
-                <button
-                  key={doc.id}
-                  type="button"
-                  className={`doc-item ${selectedDoc === doc.id ? "active" : ""}`}
-                  onClick={() => setSelectedDoc(doc.id)}
-                >
-                  <h4>{doc.title}</h4>
-                  <p>{doc.summary}</p>
-                  <div className="muted">
-                    {doc.document_type} • status {doc.status} • atualizado {doc.updated_at}
-                  </div>
-                  <div className="muted small">
-                    Fonte: {doc.source} • Evidência: {(doc.evidence_tags ?? []).join(", ")}
-                  </div>
-                </button>
-              ))
-            )}
-          </div>
-        </Card>
-
-        <Card title="Perguntas rápidas por IA" subtitle="Consulta contextual com fonte de resposta">
-          <label htmlFor="question">
-            <span className="label-inline">
-              <Search size={14} />
-              Pergunta
-            </span>
-          </label>
-          <textarea id="question" value={question} onChange={(event) => setQuestion(event.target.value)} />
-          <button className="btn btn-primary" type="button" onClick={ask}>
-            <BotMessageSquare size={16} />
-            Consultar IA
-          </button>
-          {answer ? (
-            <div className="qa">
-              <h4>
-                <ShieldCheck size={16} />
-                Resposta da IA
-              </h4>
-              <p>{answer}</p>
-              <p className="muted small">Fonte: {source}</p>
+      <Card title="Consulta Inteligente (IA)" className="ai-panel">
+        <div className="form-grid">
+          <label>
+            Pergunta
+            <div className="status-row">
+              <Search size={16} />
+              <input value={question} onChange={(event) => setQuestion(event.target.value)} />
+              <button className="btn btn-primary" type="button" onClick={() => setAsked(true)}>
+                Consultar
+              </button>
             </div>
-          ) : (
-            <p className="muted">Sem resposta ainda.</p>
-          )}
-        </Card>
-      </div>
+          </label>
+          {asked ? (
+            <div className="field">
+              <div className="status-row">
+                <ShieldCheck size={16} />
+                <strong>Resposta com evidencia</strong>
+                <Badge tone="paid">97% confianca</Badge>
+              </div>
+              <p>
+                A churrasqueira deve encerrar o uso sonoro as 22h. Eventos podem permanecer ate 23h apenas com volume
+                baixo e reserva confirmada.
+              </p>
+              <p className="small muted">Linha de Evidencia: Regimento Interno (2023), capitulo de areas comuns.</p>
+              <button className="btn btn-outline" type="button">
+                Ver documento original
+                <ExternalLink size={14} />
+              </button>
+            </div>
+          ) : null}
+        </div>
+      </Card>
+
+      <Card title="Repositorio" subtitle="Mostrando 1-4 de 42 documentos">
+        <div className="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Titulo / Resumo</th>
+                <th>Tipo</th>
+                <th>Status</th>
+                <th>Atualizado em</th>
+                <th className="text-right">Acoes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {docs.map(([title, type, status, updated, summary]) => (
+                <tr key={title}>
+                  <td>
+                    <strong>{title}</strong>
+                    <p className="small muted">{summary}</p>
+                  </td>
+                  <td>
+                    <Badge tone="neutral">
+                      <Gavel size={12} />
+                      {type}
+                    </Badge>
+                  </td>
+                  <td>
+                    <Badge tone={status.includes("Pendente") ? "pending" : "paid"}>{status}</Badge>
+                  </td>
+                  <td>{updated}</td>
+                  <td className="text-right">
+                    <button className="icon-button" type="button" aria-label={`Baixar ${title}`}>
+                      <Download size={16} />
+                    </button>
+                    <button className="icon-button" type="button" aria-label={`Mais opcoes para ${title}`}>
+                      <MoreVertical size={16} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      <Card title="Base de Evidencias" subtitle="Fontes citadas pelo assistente">
+        <div className="documents-list">
+          <div className="doc-item">
+            <div className="status-row">
+              <Bot size={16} />
+              <strong>Regimento Interno (2023)</strong>
+              <Badge tone="neutral">documento oficial</Badge>
+            </div>
+            <p>Trechos citados sempre devem indicar documento, secao e data de atualizacao.</p>
+          </div>
+        </div>
+      </Card>
     </div>
   )
 }
-

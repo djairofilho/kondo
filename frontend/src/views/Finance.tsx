@@ -1,193 +1,158 @@
-import { ArrowUpRight, CircleDollarSign, MinusCircle, RefreshCw } from "lucide-react"
-import { useEffect, useState } from "react"
+import { Download, Lightbulb, Plus, SlidersHorizontal, TrendingUp } from "lucide-react"
+import { useMemo, useState } from "react"
+
+import { Badge } from "../components/Badge"
 import { Card } from "../components/Card"
 import { MetricCard } from "../components/MetricCard"
 import { SectionHeader } from "../components/SectionHeader"
-import {
-  getFinanceInsightsAI,
-  getFinanceProjectionImpact,
-  listFinance,
-  listFinanceSummary,
-  listFinanceTransactions,
-} from "../services/mockApi"
 
-const money = new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" })
+const revenues = [
+  ["REC-1042", "Cota Condominial - Apto 402", "05/09/2023", "R$ 850,00", "Recebido"],
+  ["REC-1043", "Cota Condominial - Apto 501", "05/09/2023", "R$ 850,00", "Recebido"],
+  ["REC-1044", "Reserva Salao de Festas", "08/09/2023", "R$ 150,00", "Pendente"],
+]
 
-type FinanceData = Awaited<ReturnType<typeof listFinance>>
+const expenses = [
+  ["DES-2088", "Conta de Agua (Sabesp)", "10/09/2023", "R$ 4.200,00", "Agendado"],
+  ["DES-2089", "Manutencao Elevadores", "15/09/2023", "R$ 1.850,00", "A Pagar"],
+]
 
 export function Finance() {
-  const [finance, setFinance] = useState<FinanceData | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [delta, setDelta] = useState(500)
-  const [agreementImpact, setAgreementImpact] = useState(300)
-  const [impact, setImpact] = useState<number | null>(null)
-  const [insights, setInsights] = useState<string[]>([])
-
-  useEffect(() => {
-    let active = true
-
-    Promise.all([listFinance(), getFinanceInsightsAI()]).then(([payload, insightPayload]) => {
-      if (!active) return
-      setFinance(payload)
-      setInsights(insightPayload.insights)
-      setLoading(false)
-    })
-
-    return () => {
-      active = false
-    }
-  }, [])
-
-  useEffect(() => {
-    let active = true
-    getFinanceProjectionImpact({ cash_gap_delta: delta, agreement_impact: agreementImpact }).then((result) => {
-      if (active) setImpact(result.projected_cash_gap)
-    })
-    return () => {
-      active = false
-    }
-  }, [delta, agreementImpact])
-
-  async function refresh() {
-    setLoading(true)
-    const payload = await listFinanceSummary()
-    const transactions = await listFinanceTransactions()
-    const data = {
-      summary: payload,
-      transactions,
-      insights: (await getFinanceInsightsAI()).insights,
-    }
-    setFinance(data)
-    setInsights(data.insights)
-    setLoading(false)
-  }
+  const [lateRate, setLateRate] = useState(15)
+  const [extra, setExtra] = useState(0)
+  const projectedGap = useMemo(() => 34100 - lateRate * 220 + extra, [lateRate, extra])
 
   return (
     <div className="view-stack">
       <SectionHeader
-        title="Financeiro e transparência"
-        description="Resumo de receitas, despesas e impactos de ação para tomada de decisão."
+        title="Visao Financeira"
+        description="Competencia: Setembro 2023"
+        action={
+          <div className="action-row">
+            <button className="btn btn-outline" type="button">
+              <Download size={16} />
+              Exportar
+            </button>
+            <button className="btn btn-primary" type="button">
+              <Plus size={16} />
+              Novo Lancamento
+            </button>
+          </div>
+        }
       />
 
-      <div className="grid metrics-grid">
-        <MetricCard label="Receita esperada" value={loading ? "..." : money.format(finance?.summary.expected_revenue ?? 0)}>
-          <CircleDollarSign size={16} />
+      <div className="metrics-grid">
+        <MetricCard label="Receita Esperada" value="R$ 145.000,00" note="+2,4% vs mes ant.">
+          <TrendingUp size={18} />
         </MetricCard>
-        <MetricCard label="Receita recebida" value={loading ? "..." : money.format(finance?.summary.received_revenue ?? 0)} />
-        <MetricCard label="Despesas" value={loading ? "..." : money.format(finance?.summary.expenses ?? 0)} />
-        <MetricCard label="Gap projetado" value={loading ? "..." : money.format(finance?.summary.cash_gap ?? 0)} />
+        <MetricCard label="Receita Recebida" value="R$ 132.500,00" note="91,4% liquidado" />
+        <MetricCard label="Despesas (Pagas/Previstas)" value="R$ 98.400,00" note="2 pagamentos pendentes" />
+        <MetricCard label="Gap (Saldo Projetado)" value="R$ 34.100,00" note="Projecao atual" />
       </div>
 
-      <Card title="Simulação de impacto no caixa" subtitle="Ajuste os parâmetros para estimar cenários">
-        <div className="simulation-form">
-          <div>
-            <label htmlFor="delta">Entrada antecipada (R$)</label>
-            <input
-              id="delta"
-              type="range"
-              min={-2000}
-              max={5000}
-              step={50}
-              value={delta}
-              onChange={(event) => setDelta(Number(event.target.value))}
-            />
-            <p className="small muted">Impacto selecionado: {money.format(delta)}</p>
+      <div className="split-even">
+        <Card title="Receitas" subtitle="Lancamentos de entrada">
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Descricao</th>
+                  <th>Data</th>
+                  <th>Valor</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {revenues.map(([id, description, date, amount, status]) => (
+                  <tr key={id}>
+                    <td>{id}</td>
+                    <td>{description}</td>
+                    <td>{date}</td>
+                    <td className="money">{amount}</td>
+                    <td>
+                      <Badge tone={status === "Recebido" ? "paid" : "pending"}>{status}</Badge>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-          <div>
-            <label htmlFor="impact">Impacto de acordos (R$)</label>
-            <input
-              id="impact"
-              type="range"
-              min={0}
-              max={3000}
-              step={50}
-              value={agreementImpact}
-              onChange={(event) => setAgreementImpact(Number(event.target.value))}
-            />
-            <p className="small muted">Impacto selecionado: {money.format(agreementImpact)}</p>
+        </Card>
+
+        <Card title="Despesas" subtitle="Pagamentos e previsoes">
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Descricao</th>
+                  <th>Data Venc.</th>
+                  <th>Valor</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {expenses.map(([id, description, date, amount, status]) => (
+                  <tr key={id}>
+                    <td>{id}</td>
+                    <td>{description}</td>
+                    <td>{date}</td>
+                    <td className="money">{amount}</td>
+                    <td>
+                      <Badge tone="neutral">{status}</Badge>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-          <button type="button" className="btn btn-primary" onClick={refresh}>
-            <RefreshCw size={16} />
-            Recalcular
-          </button>
-          {impact !== null ? <p className="txn-total">Gap projetado: {money.format(impact)}</p> : null}
-        </div>
-      </Card>
+        </Card>
+      </div>
 
       <div className="grid-2">
-        <Card title="Receitas" subtitle="Pagamentos esperados e recebidos">
-          {loading || !finance ? (
-            <p className="muted">Carregando...</p>
-          ) : (
-            finance.transactions
-              .filter((txn) => txn.type === "receita")
-              .map((txn) => (
-                <div key={txn.id} className="txn-row">
-                  <span>
-                    {txn.description}
-                    <span className="small muted">#{txn.id}</span>
-                  </span>
-                  <span>{money.format(txn.amount)}</span>
-                  <span>{txn.status}</span>
-                  <span className="muted small">{txn.issued_at}</span>
-                </div>
-              ))
-          )}
+        <Card title="Simulador de Fluxo" subtitle="Ajuste cenarios de inadimplencia e entrada extra">
+          <div className="form-grid">
+            <label>
+              Inadimplencia projetada
+              <div className="range-row">
+                <input value={lateRate} min={0} max={35} type="range" onChange={(event) => setLateRate(Number(event.target.value))} />
+                <strong>{lateRate}%</strong>
+              </div>
+            </label>
+            <label>
+              Entrada extra prevista
+              <input value={extra} type="number" onChange={(event) => setExtra(Number(event.target.value))} />
+            </label>
+            <div className="field">
+              <span>Novo Gap Projetado</span>
+              <strong className="metric-value">
+                {new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(projectedGap)}
+              </strong>
+            </div>
+          </div>
         </Card>
-        <Card title="Despesas" subtitle="Custos fixos e variáveis">
-          {loading || !finance ? (
-            <p className="muted">Carregando...</p>
-          ) : (
-            finance.transactions
-              .filter((txn) => txn.type === "despesa")
-              .map((txn) => (
-                <div key={txn.id} className="txn-row">
-                  <span>
-                    {txn.description}
-                    <span className="small muted">#{txn.id}</span>
-                  </span>
-                  <span>{money.format(txn.amount)}</span>
-                  <span>{txn.status}</span>
-                  <span className="muted small">{txn.issued_at}</span>
-                </div>
-              ))
-          )}
+
+        <Card title="Insights IA" subtitle="Leituras operacionais do mes" className="ai-panel">
+          <div className="stack-list">
+            <div className="status-row">
+              <SlidersHorizontal size={18} />
+              <strong>Alerta de Inadimplencia</strong>
+            </div>
+            <p className="muted">
+              O bloco B apresentou aumento de 4% nos atrasos este mes. Sugerimos campanha de renegociacao direcionada.
+            </p>
+            <div className="status-row">
+              <Lightbulb size={18} />
+              <strong>Otimizacao de Despesas</strong>
+            </div>
+            <p className="muted">
+              Os gastos com energia da area comum estao 12% acima da media historica. Considere revisar o timer de
+              iluminacao.
+            </p>
+          </div>
         </Card>
       </div>
-
-      <Card
-        title="Insights financeiros"
-        subtitle={insights.length > 0 ? "Recomendações do assistente" : "Sem insights no momento"}
-      >
-        <div className="insights">
-          {loading ? (
-            <p className="muted">Carregando...</p>
-          ) : (
-            <>
-              <div className="insight-item">
-                <ArrowUpRight size={16} />
-                {finance && finance.summary.cash_gap < 0 ? (
-                  <span>
-                    <strong>Fluxo:</strong> necessário recuperar {money.format(Math.abs(finance.summary.cash_gap))}
-                  </span>
-                ) : (
-                  <span>
-                    <strong>Fluxo:</strong> sem desequilíbrio no mês.
-                  </span>
-                )}
-              </div>
-              {insights.map((item, idx) => (
-                <p key={`${item}-${idx}`} className={idx === 0 ? "muted" : "small muted"}>
-                  {item}
-                </p>
-              ))}
-              <p className="muted small">
-                <MinusCircle size={14} /> Reavalie o cenário após simulação para comparar cenários.
-              </p>
-            </>
-          )}
-        </div>
-      </Card>
     </div>
   )
 }
