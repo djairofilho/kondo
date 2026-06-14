@@ -4,6 +4,7 @@ from decimal import Decimal
 from sqlalchemy.orm import Session
 
 from app.core.database import SessionLocal, init_db
+from app.core.security import hash_password
 from app.models import (
     Agreement,
     Announcement,
@@ -34,9 +35,9 @@ def seed_demo_data(db: Session) -> None:
         city="Sao Paulo",
         state="SP",
     )
-    manager = User(name="Maria Sindica", email="maria@kondo.local", password_hash="demo")
-    board = User(name="Carlos Conselho", email="carlos@kondo.local", password_hash="demo")
-    resident_user = User(name="Joao Morador", email="joao@kondo.local", password_hash="demo")
+    manager = User(name="Maria Sindica", email="maria@kondo.local", password_hash=hash_password("kondo123"))
+    board = User(name="Carlos Conselho", email="carlos@kondo.local", password_hash=hash_password("kondo123"))
+    resident_user = User(name="Joao Morador", email="joao@kondo.local", password_hash=hash_password("kondo123"))
 
     db.add_all([condominium, manager, board, resident_user])
     db.flush()
