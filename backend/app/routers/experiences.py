@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
 from app.core.database import get_db
+from app.core.deps import require_roles, resolve_resident_portal_unit, resolve_resident_ticket_unit
+from app.models import Unit
 from app.schemas.tickets import Ticket, TicketCreate
 from app.services.experience_service import (
     board_dashboard,
@@ -17,72 +19,71 @@ from app.services.ticket_service import create_ticket, list_tickets
 router = APIRouter(tags=["experiences"])
 
 
-@router.get("/manager/dashboard")
+@router.get("/manager/dashboard", dependencies=[Depends(require_roles("manager"))])
 def get_manager_dashboard(db: Session = Depends(get_db)) -> dict:
     return manager_dashboard(db)
 
 
-@router.get("/board/dashboard")
+@router.get("/board/dashboard", dependencies=[Depends(require_roles("board_member"))])
 def get_board_dashboard(db: Session = Depends(get_db)) -> dict:
     return board_dashboard(db)
 
 
-@router.get("/board/overview")
+@router.get("/board/overview", dependencies=[Depends(require_roles("board_member"))])
 def get_board_overview(db: Session = Depends(get_db)) -> dict:
     return board_dashboard(db)
 
 
-@router.get("/board/financial-transparency")
+@router.get("/board/financial-transparency", dependencies=[Depends(require_roles("board_member"))])
 def get_board_financial_transparency(db: Session = Depends(get_db)) -> dict:
     return board_financial_transparency(db)
 
 
-@router.get("/board/maintenance-status")
+@router.get("/board/maintenance-status", dependencies=[Depends(require_roles("board_member"))])
 def get_board_maintenance_status(db: Session = Depends(get_db)) -> dict:
     return board_maintenance_status(db)
 
 
-@router.get("/board/decisions")
+@router.get("/board/decisions", dependencies=[Depends(require_roles("board_member"))])
 def get_board_decisions() -> dict:
     return {"decisions": []}
 
 
-@router.get("/board/audit-events")
+@router.get("/board/audit-events", dependencies=[Depends(require_roles("board_member"))])
 def get_board_audit_events() -> dict:
     return {"events": []}
 
 
 @router.get("/resident-portal/home")
-def get_resident_portal_home(unit_id: int | None = None, db: Session = Depends(get_db)) -> dict:
-    return resident_home(db, unit_id)
+def get_resident_portal_home(unit: Unit | None = Depends(resolve_resident_portal_unit), db: Session = Depends(get_db)) -> dict:
+    return resident_home(db, unit)
 
 
 @router.get("/resident-portal/my-unit")
-def get_resident_my_unit(unit_id: int | None = None, db: Session = Depends(get_db)) -> dict:
-    return {"unit": resident_home(db, unit_id)["unit"]}
+def get_resident_my_unit(unit: Unit | None = Depends(resolve_resident_portal_unit), db: Session = Depends(get_db)) -> dict:
+    return {"unit": resident_home(db, unit)["unit"]}
 
 
 @router.get("/resident-portal/my-tickets", response_model=list[Ticket])
-def get_resident_my_tickets(db: Session = Depends(get_db)) -> list[Ticket]:
-    return list_tickets(db)
+def get_resident_my_tickets(unit: Unit | None = Depends(resolve_resident_portal_unit), db: Session = Depends(get_db)) -> list[Ticket]:
+    return list_tickets(db, unit_id=unit.id if unit else None)
 
 
 @router.post("/resident-portal/tickets", response_model=Ticket)
-def post_resident_ticket(payload: TicketCreate, db: Session = Depends(get_db)) -> Ticket:
-    return create_ticket(db, payload)
+def post_resident_ticket(payload: TicketCreate, unit: Unit = Depends(resolve_resident_ticket_unit), db: Session = Depends(get_db)) -> Ticket:
+    return create_ticket(db, payload, unit=unit)
 
 
-@router.get("/resident-portal/announcements")
+@router.get("/resident-portal/announcements", dependencies=[Depends(require_roles("resident", "manager", "board_member"))])
 def get_resident_announcements(db: Session = Depends(get_db)) -> dict:
     return resident_home(db)["announcements"]
 
 
-@router.get("/resident-portal/rules")
+@router.get("/resident-portal/rules", dependencies=[Depends(require_roles("resident", "manager", "board_member"))])
 def get_resident_rules(db: Session = Depends(get_db)) -> dict:
     return resident_rules(db)
 
 
-@router.post("/resident-portal/rules/ask")
+@router.post("/resident-portal/rules/ask", dependencies=[Depends(require_roles("resident", "manager", "board_member"))])
 def post_resident_rules_ask() -> dict:
     return {"answer": "Segundo o regimento cadastrado, consulte os horarios permitidos antes de iniciar obras."}
-

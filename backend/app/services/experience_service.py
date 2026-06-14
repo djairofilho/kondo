@@ -1,8 +1,6 @@
-from decimal import Decimal
-
 from sqlalchemy.orm import Session
 
-from app.models import Announcement, Document, Expense, Revenue, Ticket, Unit, WorkItem
+from app.models import Announcement, Document, Expense, Ticket, Unit, WorkItem
 from app.services.finance_service import get_finance_summary
 
 
@@ -26,8 +24,7 @@ def board_dashboard(db: Session) -> dict:
     }
 
 
-def resident_home(db: Session, unit_id: int | None = None) -> dict:
-    unit = db.get(Unit, unit_id) if unit_id else db.query(Unit).first()
+def resident_home(db: Session, unit: Unit | None = None) -> dict:
     tickets_query = db.query(Ticket)
     if unit is not None:
         tickets_query = tickets_query.filter(Ticket.unit_id == unit.id)
@@ -63,4 +60,3 @@ def board_maintenance_status(db: Session) -> dict:
 def resident_rules(db: Session) -> dict:
     docs = db.query(Document).filter(Document.visibility.in_(["residents", "public"])).all()
     return {"documents": [{"id": doc.id, "title": doc.title, "type": doc.document_type} for doc in docs]}
-
