@@ -13,7 +13,7 @@ class TicketAIClassification(BaseModel):
 
 class TicketCreate(BaseModel):
     condominium_id: int = 1
-    unit_id: int
+    unit_id: int | None = None
     title: str = Field(min_length=3)
     description: str = Field(min_length=5)
     location: str = Field(min_length=2)

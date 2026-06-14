@@ -28,6 +28,8 @@ def get_ticket_or_404(db: Session, ticket_id: int) -> TicketModel:
 def create_ticket(db: Session, payload: TicketCreate, unit: Unit | None = None) -> TicketModel:
     condominium_id = unit.condominium_id if unit is not None else payload.condominium_id
     unit_id = unit.id if unit is not None else payload.unit_id
+    if unit_id is None:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="unit_id is required")
     ticket = TicketModel(
         condominium_id=condominium_id,
         unit_id=unit_id,
