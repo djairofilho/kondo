@@ -12,8 +12,8 @@ __pycache__/
 *.db
 *.sqlite
 *.sqlite3
-backend/storage/uploads/*
-!backend/storage/uploads/.gitkeep
+storage/uploads/*
+!storage/uploads/.gitkeep
 
 # Node
 node_modules/

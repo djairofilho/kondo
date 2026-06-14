@@ -32,7 +32,7 @@ Prioridade: P1
 ### Achados críticos
 
 1. Apenas endpoints da rota `/admin` exigem `platform_admin`.
-   - Arquivos: [app/core/deps.py](C:\Users\Usuario\Documents\hackhatons\lastroHackhaton\backend\app\core\deps.py), [app/routers/admin.py](C:\Users\Usuario\Documents\hackhatons\lastroHackhaton\backend\app\routers\admin.py)
+   - Arquivos: [app/core/deps.py](app/core/deps.py), [app/routers/admin.py](app/routers/admin.py)
    - Risco: operações de condomínio, financeiro, chamados e anexos estão abertas para qualquer token válido.
    - Prioridade: P0
    - Mitigação:
@@ -41,7 +41,7 @@ Prioridade: P1
      - registrar erros de autorização em `audit_events`.
 
 2. `get_current_user` pode retornar token válido mesmo fora do escopo do condomínio.
-   - Arquivo: [app/routers/auth.py](C:\Users\Usuario\Documents\hackhatons\lastroHackhaton\backend\app\routers\auth.py)
+   - Arquivo: [app/routers/auth.py](app/routers/auth.py)
    - Risco: ausência de “escopo de condomínio” por endpoint.
    - Prioridade: P1
    - Mitigação:
@@ -49,7 +49,7 @@ Prioridade: P1
      - exigir `condominium_id` no token de sessão do usuário ativo ou na rota principal.
 
 3. Endpoints de `residents/portal` aceitam dados de unidade via query (`unit_id`) não derivada do login.
-   - Arquivo: [app/routers/experiences.py](C:\Users\Usuario\Documents\hackhatons\lastroHackhaton\backend\app\routers\experiences.py)
+   - Arquivo: [app/routers/experiences.py](app/routers/experiences.py)
    - Risco: usuário visualizar/acionar dados de outra unidade ao manipular o parâmetro.
    - Prioridade: P1
    - Mitigação:
@@ -57,7 +57,7 @@ Prioridade: P1
      - manter parâmetro de unidade apenas administrativo (manager/board).
 
 4. Criação de comentários em chamado permite `author_user_id` livre no payload.
-   - Arquivo: [app/schemas/tickets.py](C:\Users\Usuario\Documents\hackhatons\lastroHackhaton\backend\app\schemas\tickets.py), [app/routers/tickets.py](C:\Users\Usuario\Documents\hackhatons\lastroHackhaton\backend\app\routers\tickets.py)
+   - Arquivo: [app/schemas/tickets.py](app/schemas/tickets.py), [app/routers/tickets.py](app/routers/tickets.py)
    - Risco: spoofing de autor.
    - Prioridade: P1
    - Mitigação:
@@ -68,14 +68,14 @@ Prioridade: P1
 ### Achados
 
 1. `POST /documents/{id}/summarize` e `POST /documents/{id}/ask` esperam apenas `document_id`, mas internamente não recebem `document_id` como parâmetro obrigatório do contrato de request body em serviços simulados.
-   - Arquivos: [app/routers/documents.py](C:\Users\Usuario\Documents\hackhatons\lastroHackhaton\backend\app\routers\documents.py), [app/routers/ai.py](C:\Users\Usuario\Documents\hackhatons\lastroHackhaton\backend\app\routers\ai.py)
+   - Arquivos: [app/routers/documents.py](app/routers/documents.py), [app/routers/ai.py](app/routers/ai.py)
    - Risco: integração front-end pode conflitar no payload e no contrato de validação.
    - Prioridade: P2
    - Mitigação:
      - padronizar contratos com pydantic e garantir retorno de estrutura única de erro.
 
 2. `/board/overview` e `/board/dashboard` estão retornando a mesma estrutura.
-   - Arquivo: [app/routers/experiences.py](C:\Users\Usuario\Documents\hackhatons\lastroHackhaton\backend\app\routers\experiences.py)
+   - Arquivo: [app/routers/experiences.py](app/routers/experiences.py)
    - Risco: telas com expectativa diferente podem ficar redundantes.
    - Prioridade: P2
    - Mitigação:
@@ -100,7 +100,7 @@ Prioridade: P1
    - parcelamentos por acordo,
    - pagamentos futuros em aberto,
    - status de receita/pagamento em revisão.
-   - Arquivo: [app/services/finance_service.py](C:\Users\Usuario\Documents\hackhatons\lastroHackhaton\backend\app\services\finance_service.py)
+   - Arquivo: [app/services/finance_service.py](app/services/finance_service.py)
    - Prioridade: P2
 
 2. `get_finance_summary` suporta `db=None` com valores fixos (fallback de demo).
@@ -109,7 +109,7 @@ Prioridade: P1
    - Prioridade: P3
 
 3. `get_unit_history` retorna apenas contadores e não o histórico detalhado.
-   - Arquivo: [app/services/condominium_service.py](C:\Users\Usuario\Documents\hackhatons\lastroHackhaton\backend\app\services\condominium_service.py)
+   - Arquivo: [app/services/condominium_service.py](app/services/condominium_service.py)
    - Mitigação:
      - para dashboard de unidade retornar histórico agregável por mês e vencimentos.
 
@@ -120,19 +120,19 @@ Prioridade: P1
    - Prioridade: P2
 
 2. `audit_events` existe, mas está com endpoint público e sem filtro de papel.
-   - Arquivo: [app/routers/audit.py](C:\Users\Usuario\Documents\hackhatons\lastroHackhaton\backend\app/routers\audit.py)
+   - Arquivo: [app/routers/audit.py](app/routers/audit.py)
    - Prioridade: P1
 
 ## 6) Roadmap técnico (alto valor para próxima etapa)
 
 1. `auth` e tokens: manter token local, mas planejar claims de condomínio/role para escopo sem retrabalho.
-   - Arquivos: [app/core/security.py](C:\Users\Usuario\Documents\hackhatons\lastroHackhaton\backend\app\core\security.py), [app/core/deps.py](C:\Users\Usuario\Documents\hackhatons\lastroHackhaton\backend\app\core/deps.py)
+   - Arquivos: [app/core/security.py](app/core/security.py), [app/core/deps.py](app/core/deps.py)
 
 2. Storage local já está pronto, manter abstração de provider sem quebrar schema.
-   - Arquivos: [app/services/storage_service.py](C:\Users\Usuario\Documents\hackhatons\lastroHackhaton\backend\app/services/storage_service.py)
+   - Arquivos: [app/services/storage_service.py](app/services/storage_service.py)
 
 3. `board` e `resident` ainda têm alguns endpoints de retorno estático, ideal para evoluir em próximas etapas.
-   - Arquivo: [app/routers/experiences.py](C:\Users\Usuario\Documents\hackhatons\lastroHackhaton\backend\app/routers/experiences.py)
+   - Arquivo: [app/routers/experiences.py](app/routers/experiences.py)
 
 ## 7) Checklist pronto para usar no PR do frontend
 

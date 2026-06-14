@@ -47,8 +47,12 @@ financeiros para condominios.
 ## Estrutura
 
 ```txt
-backend/      # FastAPI + SQLAlchemy + Pydantic
+app/          # FastAPI app, routers, schemas, models e services
+alembic/      # migrations
+tests/        # testes do backend
+storage/      # storage local de desenvolvimento
 docs/         # documentacao de produto, tecnica, demo e pitch
+pyproject.toml
 ```
 
 ## Como executar localmente
@@ -67,7 +71,6 @@ https://docs.astral.sh/uv/
 ### Backend
 
 ```bash
-cd backend
 cp .env.example .env
 uv sync
 uv run uvicorn app.main:app --reload
@@ -100,15 +103,37 @@ CORS_ORIGINS=http://localhost:5173
 
 Arquivos de ambiente versionados:
 
-- `.env.example`: referencia geral deste repositorio de backend.
-- `backend/.env.example`: variaveis da API.
+- `.env.example`: variaveis da API.
 
 Arquivos `.env` reais nao devem ser commitados.
+
+### Criar dados demo
+
+```bash
+uv run python -m app.seed
+```
+
+Usuarios demo criados pelo seed usam a senha:
+
+```txt
+kondo123
+```
+
+### Migrations
+
+```bash
+uv run alembic upgrade head
+```
+
+Gerar nova migration depois de alterar modelos:
+
+```bash
+uv run alembic revision --autogenerate -m "describe change"
+```
 
 ### Rodar com o frontend
 
 ```bash
-cd backend
 cp .env.example .env
 uv sync
 uv run uvicorn app.main:app --reload

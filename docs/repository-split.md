@@ -6,7 +6,7 @@ A partir desta etapa, o Kondo fica dividido em dois repositorios locais:
 
 ```txt
 kondo-front/  # frontend React / TanStack / Vite
-kondo/        # backend FastAPI, banco, testes e documentacao
+kondo/        # backend FastAPI na raiz, banco, testes e documentacao
 ```
 
 O repositorio `kondo` nao deve voltar a ter uma aplicacao em `frontend/`. O
@@ -51,7 +51,7 @@ evolucao visual deve acontecer em `../kondo-front`.
 Backend:
 
 ```bash
-cd kondo/backend
+cd kondo
 cp .env.example .env
 uv sync
 uv run uvicorn app.main:app --reload

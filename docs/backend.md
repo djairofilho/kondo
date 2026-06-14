@@ -11,12 +11,11 @@
 
 ## Setup com uv
 
-Criar o projeto dentro de `backend/`:
+O projeto Python vive na raiz deste repositorio:
 
 ```bash
-cd backend
-uv init
-uv add fastapi uvicorn sqlalchemy pydantic pydantic-settings
+cp .env.example .env
+uv sync
 ```
 
 Dependencias futuras recomendadas:
@@ -44,8 +43,8 @@ OPENAI_API_KEY=
 JWT_SECRET_KEY=dev-only-change-me
 ```
 
-O arquivo versionado `backend/.env.example` deve ser usado como base. O arquivo
-real `backend/.env` e local e nao deve ser commitado.
+O arquivo versionado `.env.example` deve ser usado como base. O arquivo real
+`.env` e local e nao deve ser commitado.
 
 Para producao com Postgres:
 
@@ -56,33 +55,19 @@ DATABASE_URL=postgresql+psycopg://user:password@host:5432/kondo
 ## Estrutura sugerida
 
 ```txt
-backend/
-  app/
-    main.py
-    core/
-      config.py
-      database.py
-      deps.py
-      security.py
-    models/
-      attachments.py
-      audit.py
-      base.py
-      content.py
-      finance.py
-      identity.py
-      operations.py
-      property.py
-      vendors.py
-    schemas/
-    routers/
-    services/
-    seed.py
-  storage/
-    uploads/
-  tests/
-  alembic/
-  pyproject.toml
+app/
+  main.py
+  core/
+  models/
+  schemas/
+  routers/
+  services/
+  seed.py
+storage/
+  uploads/
+tests/
+alembic/
+pyproject.toml
 ```
 
 ## Banco e seed
@@ -94,14 +79,12 @@ modelos devem continuar portaveis para Postgres.
 Criar tabelas e popular dados demo:
 
 ```bash
-cd backend
 uv run python -m app.seed
 ```
 
 Rodar migrations:
 
 ```bash
-cd backend
 uv run alembic upgrade head
 ```
 
@@ -156,7 +139,7 @@ Status padrao do Kanban:
 Anexos usam storage local apenas para desenvolvimento rapido:
 
 ```txt
-backend/storage/uploads/
+storage/uploads/
 ```
 
 Arquivos reais nao sao commitados. O backend expõe download por endpoint

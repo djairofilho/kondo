@@ -62,7 +62,7 @@ Status: implementado.
 
 - Criar `storage_service.py`.
 - Implementar `LocalStorageService`.
-- Salvar arquivos em `backend/storage/uploads/`.
+- Salvar arquivos em `storage/uploads/`.
 - Ignorar arquivos reais no Git.
 - Persistir apenas metadados em `Attachment`.
 - Preparar troca futura para S3, R2 ou Supabase Storage.
@@ -296,7 +296,6 @@ Para o momento atual, `pytest` e suficiente como base de testes automatizados.
 Todo PR de backend deve rodar:
 
 ```bash
-cd backend
 uv run python -m compileall app
 uv run pytest
 ```

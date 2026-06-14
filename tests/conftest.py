@@ -9,10 +9,13 @@ from app.core.security import create_token, hash_password
 from app.models import Condominium, Membership, Unit, User
 
 
-@pytest.fixture
-def create_auth_context() -> Callable[[str, bool], dict]:
+@pytest.fixture(autouse=True)
+def ensure_database_schema() -> None:
     init_db()
 
+
+@pytest.fixture
+def create_auth_context() -> Callable[[str, bool], dict]:
     def factory(role: str = "resident", platform_admin: bool = False) -> dict:
         suffix = uuid4().hex
         with SessionLocal() as db:
