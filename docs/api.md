@@ -21,6 +21,51 @@ Retorna status basico da API.
 }
 ```
 
+## Auth e usuario atual
+
+### `POST /auth/register`
+
+Cria usuario e retorna tokens.
+
+```json
+{
+  "name": "Maria Sindica",
+  "email": "maria@kondo.local",
+  "password": "kondo123"
+}
+```
+
+### `POST /auth/login`
+
+Autentica usuario.
+
+```json
+{
+  "email": "maria@kondo.local",
+  "password": "kondo123"
+}
+```
+
+### `POST /auth/logout`
+
+Encerra a sessao no cliente. No MVP, o token continua stateless.
+
+### `POST /auth/refresh`
+
+Renova tokens usando `refresh_token`.
+
+### `GET /me`
+
+Retorna o usuario autenticado.
+
+### `GET /me/memberships`
+
+Lista os acessos do usuario a condominios.
+
+### `GET /me/permissions`
+
+Lista papeis e permissoes derivadas de memberships.
+
 ## Dashboard
 
 ### `GET /dashboard`
@@ -60,6 +105,18 @@ Cria chamado.
 }
 ```
 
+### `GET /tickets/{id}`
+
+Busca chamado por id.
+
+### `PATCH /tickets/{id}`
+
+Atualiza campos basicos do chamado.
+
+### `PATCH /tickets/{id}/status`
+
+Atualiza status do chamado e move os work items vinculados.
+
 ### `POST /tickets/{id}/classify-ai`
 
 Classifica um chamado com IA ou simulacao.
@@ -71,6 +128,38 @@ Classifica um chamado com IA ou simulacao.
   "risk": "risco eletrico",
   "suggested_owner": "zelador e fornecedor hidraulico",
   "next_action": "Isolar a area e acionar fornecedor imediatamente."
+}
+```
+
+## Kanban operacional
+
+### `GET /kanban`
+
+Lista itens do Kanban operacional.
+
+### `GET /kanban/columns`
+
+Lista colunas padrao.
+
+### `POST /kanban/items`
+
+Cria item operacional.
+
+### `GET /kanban/items/{id}`
+
+Busca item operacional.
+
+### `PATCH /kanban/items/{id}`
+
+Atualiza item operacional.
+
+### `PATCH /kanban/items/{id}/move`
+
+Move item entre colunas.
+
+```json
+{
+  "status": "in_progress"
 }
 ```
 
@@ -162,4 +251,3 @@ Responde pergunta com base no documento.
   "question": "Pode fazer obra no sabado?"
 }
 ```
-
