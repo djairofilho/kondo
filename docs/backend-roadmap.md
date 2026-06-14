@@ -129,6 +129,8 @@ PATCH /residents/{resident_id}
 
 ### Dashboards por perfil
 
+Status: implementado.
+
 ```txt
 GET /dashboard
 GET /manager/dashboard
@@ -228,6 +230,9 @@ GET  /kanban/items/{item_id}/attachments
 ```
 
 ### Conselho, morador, fornecedores e IA
+
+Status: conselho e morador implementados parcialmente; fornecedores e IA
+dedicada ainda planejados.
 
 ```txt
 GET /board/overview

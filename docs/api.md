@@ -188,6 +188,26 @@ POST  /units/{unit_id}/residents
 PATCH /residents/{resident_id}
 ```
 
+## Dashboards, conselho e portal do morador
+
+```txt
+GET /manager/dashboard
+GET /board/dashboard
+GET /board/overview
+GET /board/financial-transparency
+GET /board/maintenance-status
+GET /board/decisions
+GET /board/audit-events
+
+GET  /resident-portal/home
+GET  /resident-portal/my-unit
+GET  /resident-portal/my-tickets
+POST /resident-portal/tickets
+GET  /resident-portal/announcements
+GET  /resident-portal/rules
+POST /resident-portal/rules/ask
+```
+
 ## Financeiro
 
 ### `GET /finance/summary`
